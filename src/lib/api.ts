@@ -262,6 +262,20 @@ export const globalSearchApi = {
   search: (q: string) => apiClient.get('/search', { params: { q } }),
 };
 
+export const teamApi = {
+  list: (lob_id?: string) => apiClient.get('/teams', { params: { lob_id } }),
+  create: (data: object) => apiClient.post('/teams', data),
+  get: (id: string) => apiClient.get(`/teams/${id}`),
+  update: (id: string, data: object) => apiClient.patch(`/teams/${id}`, data),
+  delete: (id: string) => apiClient.delete(`/teams/${id}`),
+  getMembers: (id: string) => apiClient.get(`/teams/${id}/members`),
+  addMember: (id: string, data: object) => apiClient.post(`/teams/${id}/members`, data),
+  removeMember: (id: string, memberId: string) => apiClient.delete(`/teams/${id}/members/${memberId}`),
+  getProjects: (id: string) => apiClient.get(`/teams/${id}/projects`),
+  assignProject: (id: string, project_id: string) => apiClient.post(`/teams/${id}/projects`, { project_id }),
+  removeProject: (id: string, assignmentId: string) => apiClient.delete(`/teams/${id}/projects/${assignmentId}`),
+};
+
 export const healthRulesApi = {
   metadata: () =>
     apiClient.get('/rules/metadata'),

@@ -16,6 +16,8 @@ import { UsersPage } from '@/pages/UsersPage';
 import { SettingsPage } from '@/pages/SettingsPage';
 import { RulesPage } from '@/pages/RulesPage';
 import { AnalyticsPage } from '@/pages/AnalyticsPage';
+import { TeamsPage } from '@/pages/TeamsPage';
+import { TeamDetailPage } from '@/pages/TeamDetailPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import { AuditLogPage } from '@/pages/AuditLogPage';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
@@ -53,6 +55,8 @@ export default function App() {
             <Route path="dashboard" element={<ErrorBoundary><DashboardPage /></ErrorBoundary>} />
             <Route path="lobs" element={<ErrorBoundary><LobsPage /></ErrorBoundary>} />
             <Route path="lobs/:lobId" element={<ErrorBoundary><LobDetailPage /></ErrorBoundary>} />
+            <Route path="teams" element={<ErrorBoundary><TeamsPage /></ErrorBoundary>} />
+            <Route path="teams/:teamId" element={<ErrorBoundary><TeamDetailPage /></ErrorBoundary>} />
             <Route path="projects" element={<ErrorBoundary><ProjectsPage /></ErrorBoundary>} />
             <Route path="projects/:projectId" element={<ErrorBoundary><ProjectDetailPage /></ErrorBoundary>} />
             <Route path="projects/:projectId/health-dashboard" element={<ErrorBoundary><ProjectHealthDashboardPage /></ErrorBoundary>} />

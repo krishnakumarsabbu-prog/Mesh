@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Building2, FolderOpen, Plug, Activity, MessageSquare, Settings, ChevronLeft, ChevronRight, Users, Zap, LogOut, Shield, Library, ChartBar as BarChart2, FileText } from 'lucide-react';
+import { LayoutDashboard, Building2, FolderOpen, Plug, Activity, MessageSquare, Settings, ChevronLeft, ChevronRight, Users, Zap, LogOut, Shield, Library, ChartBar as BarChart2, FileText, UsersRound } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUIStore } from '@/store/uiStore';
 import { useAuthStore } from '@/store/authStore';
@@ -17,6 +17,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, description: 'Overview & metrics' },
   { label: 'Lines of Business', href: '/lobs', icon: Building2, description: 'Manage LOBs' },
+  { label: 'Teams', href: '/teams', icon: UsersRound, description: 'Manage teams' },
   { label: 'Projects', href: '/projects', icon: FolderOpen, description: 'All projects' },
   { label: 'Connectors', href: '/connectors', icon: Plug, description: 'Service endpoints' },
   { label: 'Connector Catalog', href: '/connector-catalog', icon: Library, description: 'Catalog management' },

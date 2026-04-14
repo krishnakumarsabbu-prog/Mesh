@@ -4,6 +4,7 @@ from app.models.project import Project, ProjectStatus
 from app.models.connector import Connector, ConnectorType, ConnectorStatus
 from app.models.health_check import HealthCheck, HealthStatus
 from app.models.connector_catalog import ConnectorCatalogEntry, CatalogConnectorCategory, CatalogConnectorStatus
+from app.models.team import Team, TeamMember, TeamProject
 
 __all__ = [
     "User", "UserRole", "UserRoleAssignment",
@@ -12,4 +13,5 @@ __all__ = [
     "Connector", "ConnectorType", "ConnectorStatus",
     "HealthCheck", "HealthStatus",
     "ConnectorCatalogEntry", "CatalogConnectorCategory", "CatalogConnectorStatus",
+    "Team", "TeamMember", "TeamProject",
 ]

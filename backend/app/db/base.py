@@ -29,7 +29,7 @@ async def get_db():
 async def init_db():
     try:
         async with engine.begin() as conn:
-            from app.models import user, lob, project, connector, health_check, audit, connector_catalog, project_connector, connector_execution_log, health_run, health_rule, chat  # noqa: F401
+            from app.models import user, lob, project, connector, health_check, audit, connector_catalog, project_connector, connector_execution_log, health_run, health_rule, chat, team  # noqa: F401
             await conn.run_sync(Base.metadata.create_all)
         logger.info("Database tables created/verified")
     except Exception as exc:

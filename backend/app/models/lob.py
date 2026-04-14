@@ -22,6 +22,7 @@ class Lob(Base):
 
     projects = relationship("Project", back_populates="lob")
     members = relationship("LobMember", back_populates="lob")
+    teams = relationship("Team", back_populates="lob")
 
 
 class LobMember(Base):

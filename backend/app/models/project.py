@@ -38,6 +38,7 @@ class Project(Base):
     connectors = relationship("Connector", back_populates="project")
     health_checks = relationship("HealthCheck", back_populates="project")
     members = relationship("ProjectMember", back_populates="project", cascade="all, delete-orphan")
+    team_assignments = relationship("TeamProject", back_populates="project", cascade="all, delete-orphan")
 
 
 class ProjectMember(Base):
