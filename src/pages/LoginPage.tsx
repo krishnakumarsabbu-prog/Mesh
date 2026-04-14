@@ -812,16 +812,152 @@ export function LoginPage() {
       </div>
 
       {/* ---- RIGHT AUTH PANEL ---- */}
-      <div className="flex-1 flex items-center justify-center p-6 sm:p-10 relative">
-        {/* Subtle bg texture for right panel */}
+      <div className="flex-1 flex items-center justify-center p-6 sm:p-10 relative overflow-hidden">
+
+        {/* Layered background */}
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
             background: isDark
-              ? 'radial-gradient(ellipse 80% 60% at 60% 40%, rgba(52,211,153,0.04) 0%, transparent 60%)'
-              : 'radial-gradient(ellipse 80% 60% at 60% 40%, rgba(10,132,255,0.04) 0%, transparent 60%)',
+              ? 'radial-gradient(ellipse 100% 80% at 70% 20%, rgba(52,211,153,0.06) 0%, transparent 55%), radial-gradient(ellipse 70% 60% at 20% 80%, rgba(10,132,255,0.05) 0%, transparent 50%)'
+              : 'radial-gradient(ellipse 100% 80% at 70% 20%, rgba(10,132,255,0.07) 0%, transparent 55%), radial-gradient(ellipse 70% 60% at 20% 80%, rgba(52,211,153,0.04) 0%, transparent 50%)',
           }}
         />
+
+        {/* Dot grid pattern */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage: isDark
+              ? 'radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px)'
+              : 'radial-gradient(circle, rgba(0,0,0,0.06) 1px, transparent 1px)',
+            backgroundSize: '28px 28px',
+          }}
+        />
+
+        {/* Corner accent glow — top right */}
+        <div
+          className="absolute top-0 right-0 pointer-events-none"
+          style={{
+            width: '400px',
+            height: '300px',
+            background: isDark
+              ? 'radial-gradient(ellipse at top right, rgba(52,211,153,0.08) 0%, transparent 70%)'
+              : 'radial-gradient(ellipse at top right, rgba(10,132,255,0.08) 0%, transparent 70%)',
+          }}
+        />
+
+        {/* Corner accent glow — bottom left */}
+        <div
+          className="absolute bottom-0 left-0 pointer-events-none"
+          style={{
+            width: '350px',
+            height: '250px',
+            background: isDark
+              ? 'radial-gradient(ellipse at bottom left, rgba(10,132,255,0.05) 0%, transparent 70%)'
+              : 'radial-gradient(ellipse at bottom left, rgba(52,211,153,0.05) 0%, transparent 70%)',
+          }}
+        />
+
+        {/* Decorative floating orb — top left */}
+        <div
+          className="absolute pointer-events-none"
+          style={{
+            top: '8%',
+            left: '6%',
+            width: '120px',
+            height: '120px',
+            borderRadius: '50%',
+            background: isDark
+              ? 'radial-gradient(circle, rgba(52,211,153,0.06) 0%, transparent 70%)'
+              : 'radial-gradient(circle, rgba(10,132,255,0.07) 0%, transparent 70%)',
+            filter: 'blur(20px)',
+          }}
+        />
+
+        {/* Decorative floating orb — bottom right */}
+        <div
+          className="absolute pointer-events-none"
+          style={{
+            bottom: '10%',
+            right: '8%',
+            width: '160px',
+            height: '160px',
+            borderRadius: '50%',
+            background: isDark
+              ? 'radial-gradient(circle, rgba(10,132,255,0.05) 0%, transparent 70%)'
+              : 'radial-gradient(circle, rgba(251,191,36,0.06) 0%, transparent 70%)',
+            filter: 'blur(24px)',
+          }}
+        />
+
+        {/* Thin decorative accent lines */}
+        <div
+          className="absolute top-0 left-0 right-0 h-px pointer-events-none"
+          style={{
+            background: isDark
+              ? 'linear-gradient(90deg, transparent 0%, rgba(52,211,153,0.15) 30%, rgba(10,132,255,0.15) 70%, transparent 100%)'
+              : 'linear-gradient(90deg, transparent 0%, rgba(10,132,255,0.12) 30%, rgba(52,211,153,0.12) 70%, transparent 100%)',
+          }}
+        />
+
+        {/* Floating status indicator — top left decoration */}
+        <div
+          className="absolute pointer-events-none"
+          style={{ top: '6%', right: '5%', opacity: mounted ? 1 : 0, transition: 'opacity 0.8s ease 0.6s' }}
+        >
+          <div
+            className="flex items-center gap-2 px-3 py-1.5 rounded-full"
+            style={{
+              background: isDark ? 'rgba(52,211,153,0.08)' : 'rgba(10,132,255,0.06)',
+              border: `1px solid ${isDark ? 'rgba(52,211,153,0.18)' : 'rgba(10,132,255,0.15)'}`,
+              backdropFilter: 'blur(12px)',
+            }}
+          >
+            <span
+              className="w-1.5 h-1.5 rounded-full animate-pulse"
+              style={{ background: isDark ? '#34D399' : '#0A84FF', animationDuration: '2s' }}
+            />
+            <span
+              className="text-[10px] font-semibold tracking-wide"
+              style={{ color: isDark ? '#34D399' : '#0A84FF' }}
+            >
+              All systems operational
+            </span>
+          </div>
+        </div>
+
+        {/* Floating metric cards — bottom left decoration */}
+        <div
+          className="absolute bottom-8 left-6 pointer-events-none hidden xl:flex flex-col gap-2"
+          style={{ opacity: mounted ? 1 : 0, transition: 'opacity 0.8s ease 0.9s' }}
+        >
+          {[
+            { label: 'Uptime', value: '99.97%', color: isDark ? '#34D399' : '#0A84FF' },
+            { label: 'Connectors', value: '1,284', color: isDark ? '#60A5FA' : '#0A84FF' },
+          ].map((item) => (
+            <div
+              key={item.label}
+              className="flex items-center gap-2.5 px-3 py-2 rounded-xl"
+              style={{
+                background: isDark ? 'rgba(15,20,30,0.7)' : 'rgba(255,255,255,0.75)',
+                border: `1px solid ${isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)'}`,
+                backdropFilter: 'blur(16px)',
+                boxShadow: isDark ? '0 4px 16px rgba(0,0,0,0.4)' : '0 4px 16px rgba(0,0,0,0.06)',
+              }}
+            >
+              <span className="text-[11px] font-semibold" style={{ color: item.color }}>
+                {item.value}
+              </span>
+              <span
+                className="text-[10px]"
+                style={{ color: isDark ? 'rgba(255,255,255,0.3)' : '#9CA3AF' }}
+              >
+                {item.label}
+              </span>
+            </div>
+          ))}
+        </div>
 
         <div
           className={cn('relative w-full max-w-[420px]', mounted && 'animate-auth-panel-in')}
@@ -840,12 +976,28 @@ export function LoginPage() {
           {/* Heading */}
           <div className="mb-7">
             <h1
-              className="text-[28px] font-bold tracking-tight leading-tight"
-              style={{ color: isDark ? '#F9FAFB' : '#0D1117' }}
+              className="font-bold tracking-tight leading-tight"
+              style={{ fontSize: 'clamp(1.65rem, 3vw, 2rem)', color: isDark ? '#F9FAFB' : '#0D1117' }}
             >
-              {mode === 'login' ? 'Welcome back' : 'Create account'}
+              {mode === 'login' ? (
+                <>
+                  Welcome{' '}
+                  <span
+                    style={{
+                      background: isDark
+                        ? 'linear-gradient(135deg, #34D399 0%, #60A5FA 100%)'
+                        : 'linear-gradient(135deg, #0A84FF 0%, #0070E0 100%)',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      backgroundClip: 'text',
+                    }}
+                  >
+                    back
+                  </span>
+                </>
+              ) : 'Create account'}
             </h1>
-            <p className="text-[13.5px] mt-1.5" style={{ color: isDark ? 'rgba(255,255,255,0.4)' : '#71717A' }}>
+            <p className="text-[13.5px] mt-2" style={{ color: isDark ? 'rgba(255,255,255,0.4)' : '#71717A' }}>
               {mode === 'login' ? 'Sign in to your workspace' : 'Get started with HealthMesh AI'}
             </p>
           </div>
@@ -875,16 +1027,24 @@ export function LoginPage() {
 
           {/* Form card */}
           <div
-            className={cn('rounded-3xl p-6 space-y-4', shake && 'animate-error-shake')}
+            className={cn('relative rounded-3xl', shake && 'animate-error-shake')}
+            style={{
+              padding: '1px',
+              background: isDark
+                ? 'linear-gradient(135deg, rgba(52,211,153,0.18) 0%, rgba(255,255,255,0.06) 40%, rgba(10,132,255,0.14) 100%)'
+                : 'linear-gradient(135deg, rgba(10,132,255,0.2) 0%, rgba(255,255,255,0.6) 40%, rgba(52,211,153,0.15) 100%)',
+              boxShadow: isDark
+                ? '0 32px 80px rgba(0,0,0,0.7), 0 0 0 0 transparent'
+                : '0 32px 80px rgba(0,0,0,0.1), 0 4px 24px rgba(10,132,255,0.08)',
+            }}
+          >
+          <div
+            className="rounded-3xl p-6 space-y-4"
             style={{
               background: isDark
-                ? 'rgba(15,20,30,0.8)'
-                : 'rgba(255,255,255,0.85)',
-              border: `1px solid ${isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)'}`,
-              boxShadow: isDark
-                ? '0 24px 64px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06)'
-                : '0 24px 64px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,1)',
-              backdropFilter: 'blur(20px)',
+                ? 'rgba(12,17,27,0.92)'
+                : 'rgba(255,255,255,0.92)',
+              backdropFilter: 'blur(24px)',
             }}
           >
             <form onSubmit={handleSubmit} className="space-y-3.5">
@@ -971,6 +1131,7 @@ export function LoginPage() {
                 </GradientButton>
               </div>
             </form>
+          </div>
           </div>
 
           <p
