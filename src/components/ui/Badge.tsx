@@ -10,46 +10,33 @@ interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   pulse?: boolean;
 }
 
-const variantStyles: Record<BadgeVariant, string> = {
-  healthy: 'bg-success-50 text-success-600 border-success-100 ring-1 ring-success/10',
-  degraded: 'bg-warning-50 text-amber-600 border-warning-100 ring-1 ring-amber-500/10',
-  down: 'bg-danger-50 text-danger-500 border-danger-100 ring-1 ring-danger/10',
-  unknown: 'bg-neutral-100 text-neutral-500 border-neutral-200',
-  active: 'bg-primary-50 text-primary-600 border-primary-100 ring-1 ring-primary-500/10',
-  inactive: 'bg-neutral-100 text-neutral-400 border-neutral-200',
-  maintenance: 'bg-amber-50 text-amber-600 border-amber-100 ring-1 ring-amber-500/10',
-  info: 'bg-primary-50 text-primary-600 border-primary-100 ring-1 ring-primary-500/10',
-  default: 'bg-neutral-100 text-neutral-600 border-neutral-200',
-  warning: 'bg-amber-50 text-amber-600 border-amber-100 ring-1 ring-amber-500/10',
+const variantStyleMap: Record<BadgeVariant, React.CSSProperties> = {
+  healthy: { background: 'rgba(0,229,153,0.10)', color: '#00E599', border: '1px solid rgba(0,229,153,0.25)' },
+  degraded: { background: 'rgba(245,158,11,0.10)', color: '#F59E0B', border: '1px solid rgba(245,158,11,0.25)' },
+  down: { background: 'rgba(239,68,68,0.10)', color: '#EF4444', border: '1px solid rgba(239,68,68,0.25)' },
+  unknown: { background: 'rgba(107,114,128,0.10)', color: '#9CA3AF', border: '1px solid rgba(107,114,128,0.20)' },
+  active: { background: 'rgba(59,130,246,0.10)', color: '#60A5FA', border: '1px solid rgba(59,130,246,0.25)' },
+  inactive: { background: 'rgba(107,114,128,0.08)', color: '#6B7280', border: '1px solid rgba(107,114,128,0.15)' },
+  maintenance: { background: 'rgba(245,158,11,0.10)', color: '#F59E0B', border: '1px solid rgba(245,158,11,0.25)' },
+  info: { background: 'rgba(59,130,246,0.10)', color: '#60A5FA', border: '1px solid rgba(59,130,246,0.25)' },
+  default: { background: 'rgba(255,255,255,0.06)', color: '#98A2B3', border: '1px solid rgba(255,255,255,0.10)' },
+  warning: { background: 'rgba(245,158,11,0.10)', color: '#F59E0B', border: '1px solid rgba(245,158,11,0.25)' },
 };
 
-const dotColors: Record<BadgeVariant, string> = {
-  healthy: 'bg-success',
-  degraded: 'bg-warning',
-  down: 'bg-danger',
-  unknown: 'bg-neutral-400',
-  active: 'bg-primary-500',
-  inactive: 'bg-neutral-400',
-  maintenance: 'bg-amber-500',
-  info: 'bg-primary-500',
-  default: 'bg-neutral-400',
-  warning: 'bg-amber-500',
+const dotColorMap: Record<BadgeVariant, string> = {
+  healthy: '#00E599',
+  degraded: '#F59E0B',
+  down: '#EF4444',
+  unknown: '#6B7280',
+  active: '#3B82F6',
+  inactive: '#6B7280',
+  maintenance: '#F59E0B',
+  info: '#3B82F6',
+  default: '#6B7280',
+  warning: '#F59E0B',
 };
 
-const pulseDotColors: Record<BadgeVariant, string> = {
-  healthy: 'bg-success/30',
-  degraded: 'bg-amber-400/30',
-  down: 'bg-danger/30',
-  unknown: 'bg-neutral-300/50',
-  active: 'bg-primary-400/30',
-  inactive: 'bg-neutral-300/50',
-  maintenance: 'bg-amber-400/30',
-  info: 'bg-primary-400/30',
-  default: 'bg-neutral-300/50',
-  warning: 'bg-amber-400/30',
-};
-
-export function Badge({ variant = 'default', size = 'sm', dot = false, pulse = false, className, children, ...props }: BadgeProps) {
+export function Badge({ variant = 'default', size = 'sm', dot = false, pulse = false, className, style, children, ...props }: BadgeProps) {
   const sizes = {
     xs: 'px-1.5 py-0.5 text-[10px] gap-1',
     sm: 'px-2 py-0.5 text-xs gap-1.5',
@@ -59,22 +46,22 @@ export function Badge({ variant = 'default', size = 'sm', dot = false, pulse = f
   return (
     <span
       className={cn(
-        'inline-flex items-center font-semibold rounded-full border transition-all duration-150',
-        variantStyles[variant],
+        'inline-flex items-center font-semibold rounded-full transition-all duration-150',
         sizes[size],
         className
       )}
+      style={{ ...variantStyleMap[variant], ...style }}
       {...props}
     >
       {dot && (
         <span className="relative flex-shrink-0 flex items-center justify-center" style={{ width: '7px', height: '7px' }}>
           {pulse && (
             <span
-              className={cn('absolute inset-0 rounded-full animate-ping opacity-75', pulseDotColors[variant])}
-              style={{ animationDuration: '2s' }}
+              className="absolute inset-0 rounded-full animate-ping opacity-75"
+              style={{ background: dotColorMap[variant] + '40', animationDuration: '2s' }}
             />
           )}
-          <span className={cn('relative w-1.5 h-1.5 rounded-full', dotColors[variant])} />
+          <span className="relative w-1.5 h-1.5 rounded-full" style={{ background: dotColorMap[variant] }} />
         </span>
       )}
       {children}

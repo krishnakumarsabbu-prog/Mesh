@@ -18,16 +18,11 @@ function PageTransition({ children }: { children: React.ReactNode }) {
 
 export function AppLayout() {
   const { isAuthenticated } = useAuthStore();
-  const { sidebarCollapsed, theme } = useUIStore();
+  const { sidebarCollapsed } = useUIStore();
 
   useEffect(() => {
-    const root = document.documentElement;
-    if (theme === 'dark') {
-      root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
-    }
-  }, [theme]);
+    document.documentElement.classList.add('dark');
+  }, []);
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;

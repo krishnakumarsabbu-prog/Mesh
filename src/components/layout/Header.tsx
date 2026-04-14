@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Bell, Search, LogOut, ChevronDown, Settings, User as UserIcon, X, Sun, Moon, Command, ChevronRight, Layers, Zap, CircleCheck as CheckCircle2 } from 'lucide-react';
+import { Bell, Search, LogOut, ChevronDown, Settings, User as UserIcon, X, Command, ChevronRight, Layers, Zap, CircleCheck as CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUIStore } from '@/store/uiStore';
 import { useAuthStore } from '@/store/authStore';
@@ -44,48 +44,6 @@ function Breadcrumbs({ items }: { items: BreadcrumbItem[] }) {
   );
 }
 
-function ThemeSwitcher() {
-  const { theme, toggleTheme } = useUIStore();
-  const isDark = theme === 'dark';
-  const [animating, setAnimating] = useState(false);
-
-  function handleToggle() {
-    setAnimating(true);
-    toggleTheme();
-    setTimeout(() => setAnimating(false), 400);
-  }
-
-  return (
-    <button
-      onClick={handleToggle}
-      className={cn(
-        'relative flex items-center justify-center w-8 h-8 rounded-xl transition-all duration-200',
-        'focus-ring',
-      )}
-      style={{
-        background: isDark ? 'rgba(52,211,153,0.1)' : 'rgba(0,0,0,0.05)',
-        color: isDark ? '#34D399' : '#71717A',
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.transform = 'scale(1.06)';
-        e.currentTarget.style.background = isDark ? 'rgba(52,211,153,0.16)' : 'rgba(0,0,0,0.08)';
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.transform = '';
-        e.currentTarget.style.background = isDark ? 'rgba(52,211,153,0.1)' : 'rgba(0,0,0,0.05)';
-      }}
-      title={isDark ? 'Switch to Ivory theme' : 'Switch to Dark theme'}
-      aria-label="Toggle theme"
-    >
-      <span className={cn('transition-all duration-300', animating && 'animate-theme-switch')}>
-        {isDark
-          ? <Sun className="w-3.5 h-3.5" />
-          : <Moon className="w-3.5 h-3.5" />
-        }
-      </span>
-    </button>
-  );
-}
 
 function WorkspaceSwitcher() {
   const [open, setOpen] = useState(false);
@@ -497,8 +455,6 @@ export function Header() {
           )}
         </div>
 
-        <ThemeSwitcher />
-
         <NotificationBell />
 
         <div
@@ -521,14 +477,17 @@ export function Header() {
             }}
           >
             <div className="relative">
-              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center">
-                <span className="text-white text-[11px] font-bold">
+              <div
+                className="w-7 h-7 rounded-full flex items-center justify-center"
+                style={{ background: 'linear-gradient(135deg, #00E599 0%, #00C97F 100%)' }}
+              >
+                <span className="text-[#0F1115] text-[11px] font-bold">
                   {user?.full_name?.charAt(0).toUpperCase()}
                 </span>
               </div>
               <span
-                className="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-success rounded-full border"
-                style={{ borderColor: 'var(--header-bg)' }}
+                className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full border"
+                style={{ background: '#00E599', borderColor: 'var(--header-bg)' }}
               />
             </div>
             <span

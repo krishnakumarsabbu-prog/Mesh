@@ -49,8 +49,8 @@ export function MetricCard({
   value,
   subtitle,
   icon: Icon,
-  iconColor = 'text-primary-500',
-  iconBg = 'bg-primary-50',
+  iconColor,
+  iconBg,
   trend,
   className,
   accent,
@@ -77,9 +77,7 @@ export function MetricCard({
       {accent && (
         <div
           className="absolute -top-8 -right-8 w-24 h-24 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-          style={{
-            background: `radial-gradient(circle, ${accent}18 0%, transparent 70%)`,
-          }}
+          style={{ background: `radial-gradient(circle, ${accent}18 0%, transparent 70%)` }}
         />
       )}
 
@@ -107,23 +105,15 @@ export function MetricCard({
           )}
           {trend && (
             <div
-              className={cn(
-                'inline-flex items-center gap-1 mt-2.5 px-2 py-0.5 rounded-full text-[11px] font-semibold',
-              )}
+              className="inline-flex items-center gap-1 mt-2.5 px-2 py-0.5 rounded-full text-[11px] font-semibold"
               style={{
-                background: isPositive ? 'rgba(48,209,88,0.12)' : 'rgba(255,69,58,0.1)',
-                color: isPositive ? '#30D158' : '#FF453A',
+                background: isPositive ? 'rgba(0,229,153,0.12)' : 'rgba(239,68,68,0.10)',
+                color: isPositive ? '#00E599' : '#EF4444',
               }}
             >
-              {isPositive
-                ? <TrendingUp className="w-3 h-3" />
-                : <TrendingDown className="w-3 h-3" />
-              }
+              {isPositive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
               <span>{Math.abs(trend.value)}%</span>
-              <span
-                className="font-normal hidden sm:inline"
-                style={{ color: 'var(--text-muted)' }}
-              >
+              <span className="font-normal hidden sm:inline" style={{ color: 'var(--text-muted)' }}>
                 {trend.label}
               </span>
             </div>
@@ -132,12 +122,20 @@ export function MetricCard({
 
         {Icon && (
           <div
-            className={cn(
-              'p-2.5 rounded-xl flex-shrink-0 transition-transform duration-200 group-hover:scale-105',
-              iconBg,
-            )}
+            className="p-2.5 rounded-xl flex-shrink-0 transition-transform duration-200 group-hover:scale-105"
+            style={
+              iconBg
+                ? { background: iconBg }
+                : accent
+                ? { background: accent + '15', border: `1px solid ${accent}25` }
+                : { background: 'rgba(255,255,255,0.06)' }
+            }
           >
-            <Icon className={cn('w-5 h-5', iconColor)} strokeWidth={1.75} />
+            <Icon
+              className="w-5 h-5"
+              style={{ color: iconColor || accent || '#00E599' }}
+              strokeWidth={1.75}
+            />
           </div>
         )}
       </div>

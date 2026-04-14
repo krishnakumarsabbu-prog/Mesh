@@ -19,64 +19,64 @@ const ALL_ACTIONS: Record<string, QuickAction> = {
     description: 'Add, edit or deactivate users',
     href: '/users',
     icon: Users,
-    color: 'text-red-600',
-    bg: 'bg-red-50',
+    color: '',
+    bg: '',
   },
   lobs: {
     label: 'Lines of Business',
     description: 'View and manage LOBs',
     href: '/lobs',
     icon: Building2,
-    color: 'text-primary-600',
-    bg: 'bg-primary-50',
+    color: '',
+    bg: '',
   },
   projects: {
     label: 'Projects',
     description: 'Browse all projects',
     href: '/projects',
     icon: FolderOpen,
-    color: 'text-teal-600',
-    bg: 'bg-teal-50',
+    color: '',
+    bg: '',
   },
   connectors: {
     label: 'Connectors',
     description: 'Configure service endpoints',
     href: '/connectors',
     icon: Plug,
-    color: 'text-amber-600',
-    bg: 'bg-amber-50',
+    color: '',
+    bg: '',
   },
   health: {
     label: 'Health Monitor',
     description: 'Real-time service health',
     href: '/health',
     icon: Activity,
-    color: 'text-green-600',
-    bg: 'bg-green-50',
+    color: '',
+    bg: '',
   },
   chatbot: {
     label: 'AI Assistant',
     description: 'Query the AI intelligence layer',
     href: '/chatbot',
     icon: MessageSquare,
-    color: 'text-sky-600',
-    bg: 'bg-sky-50',
+    color: '',
+    bg: '',
   },
   settings: {
     label: 'Settings',
     description: 'Platform configuration',
     href: '/settings',
     icon: Settings,
-    color: 'text-neutral-600',
-    bg: 'bg-neutral-100',
+    color: '',
+    bg: '',
   },
   analytics: {
     label: 'Analytics',
     description: 'Trends and reports',
     href: '/health',
     icon: BarChart2,
-    color: 'text-teal-600',
-    bg: 'bg-teal-50',
+    color: '',
+    bg: '',
   },
 };
 
@@ -119,15 +119,20 @@ export function RoleQuickActions({ role }: { role: UserRole }) {
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = 'var(--shadow-lg)';
+                e.currentTarget.style.boxShadow = '0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,229,153,0.12)';
+                e.currentTarget.style.borderColor = 'rgba(0,229,153,0.20)';
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = '';
                 e.currentTarget.style.boxShadow = '';
+                e.currentTarget.style.borderColor = 'var(--app-border)';
               }}
             >
-              <div className={cn('w-8 h-8 rounded-xl flex items-center justify-center transition-transform duration-200 group-hover:scale-110', action.bg)}>
-                <Icon className={cn('w-4 h-4', action.color)} strokeWidth={1.75} />
+              <div
+                className="w-8 h-8 rounded-xl flex items-center justify-center transition-transform duration-200 group-hover:scale-110"
+                style={{ background: 'rgba(0,229,153,0.10)', border: '1px solid rgba(0,229,153,0.15)' }}
+              >
+                <Icon className="w-4 h-4" style={{ color: '#00E599' }} strokeWidth={1.75} />
               </div>
               <div>
                 <p
