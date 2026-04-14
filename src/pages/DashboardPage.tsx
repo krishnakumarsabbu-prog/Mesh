@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Activity, Building2, FolderOpen, Plug, TrendingUp, TriangleAlert as AlertTriangle, CircleCheck as CheckCircle, CircleAlert as AlertCircle } from 'lucide-react';
+import { Activity, Building2, FolderOpen, Plug, TriangleAlert as AlertTriangle, CircleCheck as CheckCircle, CircleAlert as AlertCircle } from 'lucide-react';
 import { useUIStore } from '@/store/uiStore';
+import { useAuthStore } from '@/store/authStore';
 import { healthApi } from '@/lib/api';
 import { DashboardStats, HealthTrend } from '@/types';
 import { MetricCard } from '@/components/ui/MetricCard';
@@ -9,9 +10,12 @@ import { HealthTrendChart } from '@/components/charts/HealthTrendChart';
 import { StatusDonutChart } from '@/components/charts/StatusDonutChart';
 import { StatsSkeleton, Skeleton } from '@/components/ui/Skeleton';
 import { formatMs } from '@/lib/utils';
+import { RoleBanner } from '@/components/dashboard/RoleBanner';
+import { RoleQuickActions } from '@/components/dashboard/RoleQuickActions';
 
 export function DashboardPage() {
   const { setPageTitle, setBreadcrumbs } = useUIStore();
+  const { user } = useAuthStore();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [trends, setTrends] = useState<HealthTrend[]>([]);
   const [loading, setLoading] = useState(true);
@@ -56,6 +60,10 @@ export function DashboardPage() {
 
   return (
     <div className="space-y-6 animate-fade-in">
+      {user && (
+        <RoleBanner role={user.role} name={user.full_name} />
+      )}
+
       {loading && !displayStats ? (
         <StatsSkeleton />
       ) : displayStats ? (
@@ -160,6 +168,10 @@ export function DashboardPage() {
             </div>
           ))}
         </div>
+      )}
+
+      {user && (
+        <RoleQuickActions role={user.role} />
       )}
     </div>
   );

@@ -26,27 +26,74 @@ async def init_db():
     async with engine.begin() as conn:
         from app.models import user, lob, project, connector, health_check, audit  # noqa: F401
         await conn.run_sync(Base.metadata.create_all)
-    await _seed_default_admin()
+    await _seed_default_users()
 
 
-async def _seed_default_admin():
+_DEFAULT_USERS = [
+    {
+        "email": "superadmin@healthmesh.ai",
+        "full_name": "Super Admin",
+        "password": "superadmin123",
+        "role": "super_admin",
+    },
+    {
+        "email": "admin@healthmesh.ai",
+        "full_name": "Platform Admin",
+        "password": "admin123",
+        "role": "admin",
+    },
+    {
+        "email": "lobadmin@healthmesh.ai",
+        "full_name": "LOB Admin",
+        "password": "lobadmin123",
+        "role": "lob_admin",
+    },
+    {
+        "email": "projectadmin@healthmesh.ai",
+        "full_name": "Project Admin",
+        "password": "projectadmin123",
+        "role": "project_admin",
+    },
+    {
+        "email": "analyst@healthmesh.ai",
+        "full_name": "Data Analyst",
+        "password": "analyst123",
+        "role": "analyst",
+    },
+    {
+        "email": "viewer@healthmesh.ai",
+        "full_name": "Read-only Viewer",
+        "password": "viewer123",
+        "role": "viewer",
+    },
+    {
+        "email": "user@healthmesh.ai",
+        "full_name": "Project User",
+        "password": "user123",
+        "role": "project_user",
+    },
+]
+
+
+async def _seed_default_users():
     from sqlalchemy import select
     from app.models.user import User, UserRole
     from app.core.security import get_password_hash
     import uuid
 
     async with AsyncSessionLocal() as session:
-        result = await session.execute(select(User).where(User.email == "admin@healthmesh.ai"))
-        if result.scalar_one_or_none():
-            return
-        admin = User(
-            id=str(uuid.uuid4()),
-            email="admin@healthmesh.ai",
-            full_name="Super Admin",
-            hashed_password=get_password_hash("admin123"),
-            role=UserRole.SUPER_ADMIN,
-            tenant_id="default",
-            is_active=True,
-        )
-        session.add(admin)
+        for entry in _DEFAULT_USERS:
+            result = await session.execute(select(User).where(User.email == entry["email"]))
+            if result.scalar_one_or_none():
+                continue
+            user = User(
+                id=str(uuid.uuid4()),
+                email=entry["email"],
+                full_name=entry["full_name"],
+                hashed_password=get_password_hash(entry["password"]),
+                role=UserRole(entry["role"]),
+                tenant_id="default",
+                is_active=True,
+            )
+            session.add(user)
         await session.commit()

@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
-import { Zap, Eye, EyeOff, ArrowRight, Shield, Activity, GitBranch } from 'lucide-react';
+import { Zap, Eye, EyeOff, ArrowRight, Shield, Activity, GitBranch, ChevronDown, Check, Copy } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { authApi } from '@/lib/api';
 import { Button } from '@/components/ui/Button';
 import { notify } from '@/store/notificationStore';
 import { cn } from '@/lib/utils';
+import { UserRole } from '@/types';
 
 const FEATURES = [
   { icon: Shield, label: 'Enterprise RBAC', desc: 'Role-based access control across teams' },
@@ -13,11 +14,80 @@ const FEATURES = [
   { icon: GitBranch, label: 'Multi-LOB', desc: 'Manage all lines of business in one place' },
 ];
 
-const STATS = [
-  { value: '99.9%', label: 'Uptime SLA' },
-  { value: '<2ms', label: 'Avg Latency' },
-  { value: '10k+', label: 'Connectors' },
-  { value: '50+', label: 'LOBs' },
+interface DemoAccount {
+  role: UserRole;
+  label: string;
+  email: string;
+  password: string;
+  description: string;
+  color: string;
+  textColor: string;
+}
+
+const DEMO_ACCOUNTS: DemoAccount[] = [
+  {
+    role: 'super_admin',
+    label: 'Super Admin',
+    email: 'superadmin@healthmesh.ai',
+    password: 'superadmin123',
+    description: 'Full platform access, manage all users & settings',
+    color: 'bg-red-50 border-red-200',
+    textColor: 'text-red-700',
+  },
+  {
+    role: 'admin',
+    label: 'Admin',
+    email: 'admin@healthmesh.ai',
+    password: 'admin123',
+    description: 'Broad platform access across LOBs and projects',
+    color: 'bg-amber-50 border-amber-200',
+    textColor: 'text-amber-700',
+  },
+  {
+    role: 'lob_admin',
+    label: 'LOB Admin',
+    email: 'lobadmin@healthmesh.ai',
+    password: 'lobadmin123',
+    description: 'Manages a Line of Business and its projects',
+    color: 'bg-orange-50 border-orange-200',
+    textColor: 'text-orange-700',
+  },
+  {
+    role: 'project_admin',
+    label: 'Project Admin',
+    email: 'projectadmin@healthmesh.ai',
+    password: 'projectadmin123',
+    description: 'Manages connectors and health within a project',
+    color: 'bg-sky-50 border-sky-200',
+    textColor: 'text-sky-700',
+  },
+  {
+    role: 'analyst',
+    label: 'Analyst',
+    email: 'analyst@healthmesh.ai',
+    password: 'analyst123',
+    description: 'Read access to analytics, health reports & dashboards',
+    color: 'bg-teal-50 border-teal-200',
+    textColor: 'text-teal-700',
+  },
+  {
+    role: 'viewer',
+    label: 'Viewer',
+    email: 'viewer@healthmesh.ai',
+    password: 'viewer123',
+    description: 'Read-only access to assigned resources',
+    color: 'bg-neutral-50 border-neutral-200',
+    textColor: 'text-neutral-600',
+  },
+  {
+    role: 'project_user',
+    label: 'Project User',
+    email: 'user@healthmesh.ai',
+    password: 'user123',
+    description: 'Interact with assigned project data and connectors',
+    color: 'bg-green-50 border-green-200',
+    textColor: 'text-green-700',
+  },
 ];
 
 type Mode = 'login' | 'register';
@@ -80,6 +150,117 @@ function FloatingInput({
   );
 }
 
+function RoleSelector({
+  selected,
+  onSelect,
+}: {
+  selected: DemoAccount | null;
+  onSelect: (account: DemoAccount) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [copied, setCopied] = useState<string | null>(null);
+
+  const copyToClipboard = (text: string, key: string) => {
+    navigator.clipboard.writeText(text);
+    setCopied(key);
+    setTimeout(() => setCopied(null), 1500);
+  };
+
+  return (
+    <div className="space-y-2">
+      <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider px-0.5">
+        Quick Access — Select a Role
+      </p>
+      <div className="relative">
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          className={cn(
+            'w-full flex items-center gap-3 px-4 py-3 rounded-2xl border text-left transition-all duration-150',
+            'bg-white hover:border-neutral-300',
+            open
+              ? 'border-primary-400 shadow-[0_0_0_3px_rgba(10,132,255,0.10)]'
+              : 'border-neutral-200',
+          )}
+        >
+          {selected ? (
+            <>
+              <span className={cn('px-2 py-0.5 rounded-lg text-[11px] font-bold border', selected.color, selected.textColor)}>
+                {selected.label}
+              </span>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-neutral-800 truncate">{selected.email}</p>
+                <p className="text-[11px] text-neutral-400 truncate">{selected.description}</p>
+              </div>
+            </>
+          ) : (
+            <span className="text-sm text-neutral-400 flex-1">Choose a demo role to auto-fill credentials</span>
+          )}
+          <ChevronDown className={cn('w-4 h-4 text-neutral-400 flex-shrink-0 transition-transform duration-150', open && 'rotate-180')} />
+        </button>
+
+        {open && (
+          <div className="absolute top-full left-0 right-0 mt-1.5 z-50 bg-white border border-neutral-200 rounded-2xl shadow-xl overflow-hidden animate-fade-in">
+            <div className="max-h-72 overflow-y-auto py-1.5">
+              {DEMO_ACCOUNTS.map((account) => (
+                <button
+                  key={account.role}
+                  type="button"
+                  onClick={() => { onSelect(account); setOpen(false); }}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-neutral-50 transition-colors text-left group"
+                >
+                  <span className={cn('px-2 py-0.5 rounded-lg text-[11px] font-bold border flex-shrink-0', account.color, account.textColor)}>
+                    {account.label}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[12px] font-medium text-neutral-700 truncate">{account.email}</p>
+                    <p className="text-[10px] text-neutral-400 truncate">{account.description}</p>
+                  </div>
+                  {selected?.role === account.role && (
+                    <Check className="w-3.5 h-3.5 text-primary-500 flex-shrink-0" />
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {selected && (
+        <div className={cn('rounded-2xl border px-4 py-3 space-y-2', selected.color)}>
+          <p className="text-[11px] font-semibold text-neutral-500 uppercase tracking-wider">Credentials</p>
+          <div className="flex items-center justify-between gap-2">
+            <div>
+              <p className="text-[10px] text-neutral-400">Email</p>
+              <p className="text-xs font-mono font-semibold text-neutral-700">{selected.email}</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => copyToClipboard(selected.email, 'email')}
+              className="p-1 rounded-lg text-neutral-400 hover:text-neutral-600 hover:bg-white/60 transition-colors"
+            >
+              {copied === 'email' ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
+            </button>
+          </div>
+          <div className="flex items-center justify-between gap-2">
+            <div>
+              <p className="text-[10px] text-neutral-400">Password</p>
+              <p className="text-xs font-mono font-semibold text-neutral-700">{selected.password}</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => copyToClipboard(selected.password, 'password')}
+              className="p-1 rounded-lg text-neutral-400 hover:text-neutral-600 hover:bg-white/60 transition-colors"
+            >
+              {copied === 'password' ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function LoginPage() {
   const { isAuthenticated, setAuth } = useAuthStore();
   const navigate = useNavigate();
@@ -88,8 +269,15 @@ export function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState({ email: '', password: '', full_name: '' });
   const [error, setError] = useState('');
+  const [selectedDemo, setSelectedDemo] = useState<DemoAccount | null>(null);
 
   if (isAuthenticated) return <Navigate to="/dashboard" replace />;
+
+  const handleDemoSelect = (account: DemoAccount) => {
+    setSelectedDemo(account);
+    setForm((f) => ({ ...f, email: account.email, password: account.password }));
+    setError('');
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -136,7 +324,7 @@ export function LoginPage() {
               Unified visibility across all your Lines of Business, projects, and service connectors.
             </p>
 
-            <div className="space-y-3 mb-12">
+            <div className="space-y-3 mb-10">
               {FEATURES.map(({ icon: Icon, label, desc }) => (
                 <div key={label} className="flex items-center gap-3.5">
                   <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(10,132,255,0.15)' }}>
@@ -150,13 +338,15 @@ export function LoginPage() {
               ))}
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              {STATS.map((stat) => (
-                <div key={stat.label} className="rounded-2xl px-4 py-3" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                  <p className="text-2xl font-bold text-white">{stat.value}</p>
-                  <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>{stat.label}</p>
-                </div>
-              ))}
+            <div className="rounded-2xl p-4 space-y-2" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.4)' }}>Demo Roles Available</p>
+              <div className="flex flex-wrap gap-1.5">
+                {DEMO_ACCOUNTS.map((a) => (
+                  <span key={a.role} className="text-[10px] font-semibold px-2 py-0.5 rounded-lg" style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.7)' }}>
+                    {a.label}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -167,7 +357,7 @@ export function LoginPage() {
       </div>
 
       <div className="flex-1 flex items-center justify-center p-8">
-        <div className="w-full max-w-[380px] animate-fade-in">
+        <div className="w-full max-w-[420px] animate-fade-in">
           <div className="flex items-center gap-2.5 mb-10 lg:hidden">
             <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #0A84FF, #0066CC)' }}>
               <Zap className="w-4 h-4 text-white" />
@@ -184,11 +374,11 @@ export function LoginPage() {
             </p>
           </div>
 
-          <div className="flex p-1 bg-neutral-100/80 rounded-2xl mb-8 gap-1">
+          <div className="flex p-1 bg-neutral-100/80 rounded-2xl mb-6 gap-1">
             {(['login', 'register'] as Mode[]).map((m) => (
               <button
                 key={m}
-                onClick={() => { setMode(m); setError(''); }}
+                onClick={() => { setMode(m); setError(''); setSelectedDemo(null); }}
                 className={cn(
                   'flex-1 py-2 text-sm font-semibold rounded-xl transition-all duration-150',
                   mode === m
@@ -202,6 +392,10 @@ export function LoginPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-3">
+            {mode === 'login' && (
+              <RoleSelector selected={selectedDemo} onSelect={handleDemoSelect} />
+            )}
+
             {mode === 'register' && (
               <FloatingInput
                 label="Full Name"
@@ -216,7 +410,7 @@ export function LoginPage() {
               label="Email address"
               type="email"
               value={form.email}
-              onChange={(v) => setForm({ ...form, email: v })}
+              onChange={(v) => { setForm({ ...form, email: v }); if (selectedDemo) setSelectedDemo(null); }}
               required
               autoComplete="email"
             />
@@ -224,7 +418,7 @@ export function LoginPage() {
               label="Password"
               type={showPassword ? 'text' : 'password'}
               value={form.password}
-              onChange={(v) => setForm({ ...form, password: v })}
+              onChange={(v) => { setForm({ ...form, password: v }); if (selectedDemo) setSelectedDemo(null); }}
               required
               autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
               suffix={
@@ -257,12 +451,6 @@ export function LoginPage() {
               </Button>
             </div>
           </form>
-
-          {mode === 'login' && (
-            <p className="mt-4 text-center text-xs text-neutral-400">
-              Demo: <span className="font-medium text-neutral-600">admin@healthmesh.ai</span> / <span className="font-medium text-neutral-600">admin123</span>
-            </p>
-          )}
         </div>
       </div>
     </div>
