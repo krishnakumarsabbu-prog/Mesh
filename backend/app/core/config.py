@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24
     REFRESH_TOKEN_EXPIRE_DAYS: int = 30
     CORS_ORIGINS: list[str] = ["http://localhost:5173", "http://localhost:3000"]
+    SEED_DB: bool = True
 
     class Config:
         env_file = ".env"

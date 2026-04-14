@@ -1,6 +1,10 @@
+import logging
+import uuid
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase
 from app.core.config import settings
+
+logger = logging.getLogger(__name__)
 
 engine = create_async_engine(settings.DATABASE_URL, echo=settings.DEBUG)
 AsyncSessionLocal = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
@@ -23,10 +27,19 @@ async def get_db():
 
 
 async def init_db():
-    async with engine.begin() as conn:
-        from app.models import user, lob, project, connector, health_check, audit  # noqa: F401
-        await conn.run_sync(Base.metadata.create_all)
-    await _seed_default_users()
+    try:
+        async with engine.begin() as conn:
+            from app.models import user, lob, project, connector, health_check, audit  # noqa: F401
+            await conn.run_sync(Base.metadata.create_all)
+        logger.info("Database tables created/verified")
+    except Exception as exc:
+        logger.error(f"Failed to initialize database tables: {exc}")
+        raise
+
+    if settings.SEED_DB:
+        await _seed_default_users()
+    else:
+        logger.info("Database seeding skipped (SEED_DB=false)")
 
 
 _DEFAULT_USERS = [
@@ -79,21 +92,42 @@ async def _seed_default_users():
     from sqlalchemy import select
     from app.models.user import User, UserRole
     from app.core.security import get_password_hash
-    import uuid
 
-    async with AsyncSessionLocal() as session:
-        for entry in _DEFAULT_USERS:
-            result = await session.execute(select(User).where(User.email == entry["email"]))
-            if result.scalar_one_or_none():
-                continue
-            user = User(
-                id=str(uuid.uuid4()),
-                email=entry["email"],
-                full_name=entry["full_name"],
-                hashed_password=get_password_hash(entry["password"]),
-                role=UserRole(entry["role"]),
-                tenant_id="default",
-                is_active=True,
-            )
-            session.add(user)
-        await session.commit()
+    logger.info("Checking database for seed users...")
+    seeded = 0
+    skipped = 0
+
+    try:
+        async with AsyncSessionLocal() as session:
+            for entry in _DEFAULT_USERS:
+                try:
+                    result = await session.execute(select(User).where(User.email == entry["email"]))
+                    if result.scalar_one_or_none():
+                        logger.debug(f"  [skip] {entry['email']} already exists")
+                        skipped += 1
+                        continue
+
+                    user = User(
+                        id=str(uuid.uuid4()),
+                        email=entry["email"],
+                        full_name=entry["full_name"],
+                        hashed_password=get_password_hash(entry["password"]),
+                        role=UserRole(entry["role"]),
+                        tenant_id="default",
+                        is_active=True,
+                    )
+                    session.add(user)
+                    logger.info(f"  [seed] {entry['email']} ({entry['role']})")
+                    seeded += 1
+                except Exception as exc:
+                    logger.error(f"  [error] Failed to seed {entry['email']}: {exc}")
+
+            await session.commit()
+
+        if seeded:
+            logger.info(f"Seeding complete: {seeded} users created, {skipped} already existed")
+        else:
+            logger.info(f"Seeding: all {skipped} users already exist, nothing to do")
+
+    except Exception as exc:
+        logger.error(f"Database seeding failed: {exc}")
