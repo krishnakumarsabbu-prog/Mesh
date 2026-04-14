@@ -316,13 +316,13 @@ async def update_rule_status(
     return HealthRuleResponse.from_orm_rule(rule)
 
 
-@router.delete("/{rule_id}", status_code=204)
+@router.delete("/{rule_id}", status_code=200)
 async def delete_rule(
     rule_id: str,
     request: Request,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
-) -> None:
+) -> dict:
     """Archive (soft-delete) a rule. System rules cannot be deleted."""
     try:
         deleted = await health_rule_service.delete_rule(
@@ -337,3 +337,4 @@ async def delete_rule(
         user_id=current_user.id, tenant_id=current_user.tenant_id,
         ip_address=request.client.host if request.client else None,
     )
+    return {"deleted": True}
