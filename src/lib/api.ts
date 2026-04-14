@@ -138,3 +138,18 @@ export const projectConnectorApi = {
   remove: (projectId: string, pcId: string) =>
     apiClient.delete(`/projects/${projectId}/connectors/${pcId}`),
 };
+
+export const connectorAgentApi = {
+  test: (projectId: string, pcId: string, data?: { config?: Record<string, unknown>; credentials?: Record<string, unknown> }) =>
+    apiClient.post(`/projects/${projectId}/connectors/${pcId}/agent/test`, data ?? {}),
+  sync: (projectId: string, pcId: string) =>
+    apiClient.post(`/projects/${projectId}/connectors/${pcId}/agent/sync`),
+  status: (projectId: string, pcId: string) =>
+    apiClient.get(`/projects/${projectId}/connectors/${pcId}/agent/status`),
+  logs: (projectId: string, pcId: string, limit?: number) =>
+    apiClient.get(`/projects/${projectId}/connectors/${pcId}/agent/logs`, { params: { limit } }),
+  projectStatuses: (projectId: string) =>
+    apiClient.get(`/projects/${projectId}/connectors/agent/statuses`),
+  registry: () =>
+    apiClient.get('/connectors/agents/registry'),
+};

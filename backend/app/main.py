@@ -18,6 +18,8 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info(f"Starting {settings.APP_NAME} v{settings.APP_VERSION}")
+    from app.connectors.base.registry import initialize_registry
+    initialize_registry()
     await init_db()
     logger.info("Database initialized")
     yield

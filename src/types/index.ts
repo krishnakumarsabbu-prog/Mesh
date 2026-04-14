@@ -244,3 +244,53 @@ export interface ProjectConnectorTestResult {
   error?: string;
   details?: Record<string, unknown>;
 }
+
+export type AgentHealthStatus = 'healthy' | 'degraded' | 'down' | 'timeout' | 'error' | 'unknown' | 'unconfigured';
+export type ExecutionOutcome = 'success' | 'failure' | 'timeout' | 'auth_error' | 'config_error' | 'skipped';
+
+export interface ConnectorAgentStatus {
+  project_connector_id: string;
+  health_status: AgentHealthStatus;
+  last_sync_at?: string;
+  last_sync_outcome?: ExecutionOutcome;
+  last_sync_response_ms?: number;
+  last_error?: string;
+  last_error_at?: string;
+  consecutive_failures: number;
+  total_executions: number;
+  total_failures: number;
+  uptime_percentage?: number;
+  updated_at?: string;
+}
+
+export interface ConnectorAgentTestResult {
+  success: boolean;
+  response_time_ms?: number;
+  status_code?: number;
+  error?: string;
+  details?: Record<string, unknown>;
+  authenticated?: boolean;
+  connector_slug?: string;
+  executed_at?: string;
+}
+
+export interface ConnectorAgentSyncResult {
+  success: boolean;
+  health_status: AgentHealthStatus;
+  response_time_ms?: number;
+  message?: string;
+  error?: string;
+  metrics?: Array<{ name: string; value: number; unit: string }>;
+  connector_slug?: string;
+  executed_at?: string;
+}
+
+export interface ConnectorExecutionLog {
+  id: string;
+  triggered_by: 'manual' | 'scheduled' | 'api';
+  outcome: ExecutionOutcome;
+  response_time_ms?: number;
+  http_status_code?: number;
+  error_message?: string;
+  executed_at: string;
+}

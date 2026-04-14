@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.v1.endpoints import auth, users, lobs, projects, connectors, health, chatbot, audit, connector_catalog, project_connectors
+from app.api.v1.endpoints import auth, users, lobs, projects, connectors, health, chatbot, audit, connector_catalog, project_connectors, connector_agents
 
 api_router = APIRouter(prefix="/api/v1")
 
@@ -13,3 +13,4 @@ api_router.include_router(chatbot.router)
 api_router.include_router(audit.router)
 api_router.include_router(connector_catalog.router)
 api_router.include_router(project_connectors.router)
+api_router.include_router(connector_agents.router)

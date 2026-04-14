@@ -1,19 +1,42 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Plug, Plus, Trash2, Settings, ToggleLeft, ToggleRight, ChevronUp, ChevronDown, CircleCheck as CheckCircle, Circle as XCircle, CircleAlert as AlertCircle, Loader, Activity, ExternalLink, Lock, Eye, EyeOff } from 'lucide-react';
+import {
+  Plug, Plus, Trash2, Settings, ToggleLeft, ToggleRight, ChevronUp, ChevronDown,
+  CircleCheck as CheckCircle, Circle as XCircle, CircleAlert as AlertCircle,
+  Loader, Activity, ExternalLink, Lock, Eye, EyeOff, RefreshCw, Clock, Zap, List,
+} from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Modal, ConfirmModal } from '@/components/ui/Modal';
-import { Input, Select, TextArea } from '@/components/ui/Input';
+import { Input, Select } from '@/components/ui/Input';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { notify } from '@/store/notificationStore';
-import { projectConnectorApi, catalogApi } from '@/lib/api';
-import { ProjectConnector, ConnectorCatalogEntry } from '@/types';
-import { cn } from '@/lib/utils';
+import { projectConnectorApi, catalogApi, connectorAgentApi } from '@/lib/api';
+import { ProjectConnector, ConnectorCatalogEntry, ConnectorAgentStatus, ConnectorExecutionLog } from '@/types';
+import { cn, formatRelativeTime } from '@/lib/utils';
 
 const STATUS_META: Record<string, { label: string; color: string; bg: string; icon: React.ReactNode }> = {
-  configured: { label: 'Configured', color: '#30D158', bg: 'rgba(48,209,88,0.12)', icon: <CheckCircle className="w-3.5 h-3.5" /> },
-  unconfigured: { label: 'Unconfigured', color: '#FF9F0A', bg: 'rgba(255,159,10,0.12)', icon: <AlertCircle className="w-3.5 h-3.5" /> },
-  error: { label: 'Error', color: '#FF453A', bg: 'rgba(255,69,58,0.12)', icon: <XCircle className="w-3.5 h-3.5" /> },
-  testing: { label: 'Testing', color: '#0A84FF', bg: 'rgba(10,132,255,0.12)', icon: <Loader className="w-3.5 h-3.5 animate-spin" /> },
+  configured:    { label: 'Configured',   color: '#30D158', bg: 'rgba(48,209,88,0.12)',   icon: <CheckCircle className="w-3.5 h-3.5" /> },
+  unconfigured:  { label: 'Unconfigured', color: '#FF9F0A', bg: 'rgba(255,159,10,0.12)',  icon: <AlertCircle className="w-3.5 h-3.5" /> },
+  error:         { label: 'Error',        color: '#FF453A', bg: 'rgba(255,69,58,0.12)',   icon: <XCircle className="w-3.5 h-3.5" /> },
+  testing:       { label: 'Testing',      color: '#0A84FF', bg: 'rgba(10,132,255,0.12)',  icon: <Loader className="w-3.5 h-3.5 animate-spin" /> },
+};
+
+const AGENT_STATUS_META: Record<string, { label: string; color: string; bg: string; dot: string }> = {
+  healthy:       { label: 'Healthy',      color: '#30D158', bg: 'rgba(48,209,88,0.10)',   dot: '#30D158' },
+  degraded:      { label: 'Degraded',     color: '#FF9F0A', bg: 'rgba(255,159,10,0.10)',  dot: '#FF9F0A' },
+  down:          { label: 'Down',         color: '#FF453A', bg: 'rgba(255,69,58,0.10)',   dot: '#FF453A' },
+  timeout:       { label: 'Timeout',      color: '#FF6B35', bg: 'rgba(255,107,53,0.10)',  dot: '#FF6B35' },
+  error:         { label: 'Error',        color: '#FF453A', bg: 'rgba(255,69,58,0.10)',   dot: '#FF453A' },
+  unknown:       { label: 'Unknown',      color: '#8E8E93', bg: 'rgba(142,142,147,0.10)', dot: '#8E8E93' },
+  unconfigured:  { label: 'Unconfigured', color: '#FF9F0A', bg: 'rgba(255,159,10,0.10)',  dot: '#FF9F0A' },
+};
+
+const OUTCOME_META: Record<string, { label: string; color: string }> = {
+  success:      { label: 'Success',      color: '#30D158' },
+  failure:      { label: 'Failure',      color: '#FF453A' },
+  timeout:      { label: 'Timeout',      color: '#FF6B35' },
+  auth_error:   { label: 'Auth Error',   color: '#FF453A' },
+  config_error: { label: 'Config Error', color: '#FF9F0A' },
+  skipped:      { label: 'Skipped',      color: '#8E8E93' },
 };
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -66,7 +89,24 @@ function ConnectorStatusBadge({ status }: { status: string }) {
   );
 }
 
-function ConnectorIcon({ icon, color, name }: { icon?: string; color?: string; name: string }) {
+function AgentStatusIndicator({ agentStatus }: { agentStatus?: ConnectorAgentStatus | null }) {
+  if (!agentStatus) return null;
+  const meta = AGENT_STATUS_META[agentStatus.health_status] || AGENT_STATUS_META.unknown;
+  return (
+    <span
+      className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium"
+      style={{ color: meta.color, background: meta.bg }}
+    >
+      <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: meta.dot }} />
+      {meta.label}
+      {agentStatus.last_sync_response_ms != null && (
+        <span className="opacity-60">{agentStatus.last_sync_response_ms}ms</span>
+      )}
+    </span>
+  );
+}
+
+function ConnectorIcon({ color, name }: { color?: string; name: string }) {
   return (
     <div
       className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 font-bold text-sm"
@@ -79,6 +119,7 @@ function ConnectorIcon({ icon, color, name }: { icon?: string; color?: string; n
 
 export function ProjectConnectorsTab({ projectId, canManage }: Props) {
   const [connectors, setConnectors] = useState<ProjectConnector[]>([]);
+  const [agentStatuses, setAgentStatuses] = useState<Record<string, ConnectorAgentStatus>>({});
   const [loading, setLoading] = useState(true);
   const [catalog, setCatalog] = useState<ConnectorCatalogEntry[]>([]);
 
@@ -92,7 +133,13 @@ export function ProjectConnectorsTab({ projectId, canManage }: Props) {
   const [showSecrets, setShowSecrets] = useState<Record<string, boolean>>({});
 
   const [testingId, setTestingId] = useState<string | null>(null);
-  const [testResult, setTestResult] = useState<{ success: boolean; message: string; ms?: number } | null>(null);
+  const [testResult, setTestResult] = useState<{ success: boolean; message: string; ms?: number; details?: Record<string, unknown> } | null>(null);
+
+  const [syncingId, setSyncingId] = useState<string | null>(null);
+
+  const [logsTarget, setLogsTarget] = useState<ProjectConnector | null>(null);
+  const [logs, setLogs] = useState<ConnectorExecutionLog[]>([]);
+  const [logsLoading, setLogsLoading] = useState(false);
 
   const [removeTarget, setRemoveTarget] = useState<ProjectConnector | null>(null);
   const [removeSaving, setRemoveSaving] = useState(false);
@@ -100,8 +147,16 @@ export function ProjectConnectorsTab({ projectId, canManage }: Props) {
   const fetchAll = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await projectConnectorApi.list(projectId);
-      setConnectors(res.data);
+      const [connRes, statusRes] = await Promise.all([
+        projectConnectorApi.list(projectId),
+        connectorAgentApi.projectStatuses(projectId).catch(() => ({ data: [] })),
+      ]);
+      setConnectors(connRes.data);
+      const statusMap: Record<string, ConnectorAgentStatus> = {};
+      (statusRes.data as ConnectorAgentStatus[]).forEach(s => {
+        statusMap[s.project_connector_id] = s;
+      });
+      setAgentStatuses(statusMap);
     } catch {
       notify.error('Failed to load connectors');
     } finally {
@@ -185,7 +240,7 @@ export function ProjectConnectorsTab({ projectId, canManage }: Props) {
     }
   };
 
-  const handleTestConnection = async () => {
+  const handleAgentTest = async () => {
     if (!configTarget) return;
     setTestingId(configTarget.id);
     setTestResult(null);
@@ -200,20 +255,57 @@ export function ProjectConnectorsTab({ projectId, canManage }: Props) {
           else config[f.key] = val;
         }
       });
-      const res = await projectConnectorApi.test(projectId, configTarget.id, { config, credentials });
+      const res = await connectorAgentApi.test(projectId, configTarget.id, { config, credentials });
       const data = res.data;
+      const detailParts: string[] = [];
+      if (data.connector_slug) detailParts.push(`Agent: ${data.connector_slug}`);
+      if (data.authenticated === true) detailParts.push('Authenticated');
+      if (data.details?.version) detailParts.push(`v${data.details.version}`);
       setTestResult({
         success: data.success,
-        message: data.success ? 'Connection successful' : (data.error || 'Connection failed'),
+        message: data.success
+          ? `Connection successful${detailParts.length ? ' — ' + detailParts.join(' · ') : ''}`
+          : (data.error || 'Connection failed'),
         ms: data.response_time_ms,
+        details: data.details,
       });
-      if (data.success) {
-        fetchAll();
-      }
+      if (data.success) fetchAll();
     } catch {
-      setTestResult({ success: false, message: 'Test request failed' });
+      setTestResult({ success: false, message: 'Agent test request failed' });
     } finally {
       setTestingId(null);
+    }
+  };
+
+  const handleSync = async (pc: ProjectConnector) => {
+    setSyncingId(pc.id);
+    try {
+      const res = await connectorAgentApi.sync(projectId, pc.id);
+      const data = res.data;
+      if (data.success) {
+        notify.success(`Sync complete — ${data.health_status} (${data.response_time_ms || 0}ms)`);
+      } else {
+        notify.error('Sync failed', data.error || data.message);
+      }
+      fetchAll();
+    } catch {
+      notify.error('Sync failed');
+    } finally {
+      setSyncingId(null);
+    }
+  };
+
+  const openLogs = async (pc: ProjectConnector) => {
+    setLogsTarget(pc);
+    setLogs([]);
+    setLogsLoading(true);
+    try {
+      const res = await connectorAgentApi.logs(projectId, pc.id, 30);
+      setLogs(res.data);
+    } catch {
+      notify.error('Failed to load execution logs');
+    } finally {
+      setLogsLoading(false);
     }
   };
 
@@ -266,17 +358,38 @@ export function ProjectConnectorsTab({ projectId, canManage }: Props) {
     );
   }
 
+  const healthyCnt = Object.values(agentStatuses).filter(s => s.health_status === 'healthy').length;
+  const downCnt = Object.values(agentStatuses).filter(s => s.health_status === 'down').length;
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-sm font-semibold text-neutral-900">Project Connectors</h3>
-          <p className="text-xs text-neutral-400 mt-0.5">{connectors.length} connector{connectors.length !== 1 ? 's' : ''} assigned</p>
+          <p className="text-xs text-neutral-400 mt-0.5">
+            {connectors.length} connector{connectors.length !== 1 ? 's' : ''}
+            {Object.keys(agentStatuses).length > 0 && (
+              <span className="ml-1.5">
+                · <span className="text-green-600">{healthyCnt} healthy</span>
+                {downCnt > 0 && <span className="text-red-500 ml-1">· {downCnt} down</span>}
+              </span>
+            )}
+          </p>
         </div>
         {canManage && (
-          <Button size="sm" icon={<Plus className="w-3.5 h-3.5" />} onClick={openAssign}>
-            Assign Connector
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="secondary"
+              icon={<RefreshCw className="w-3.5 h-3.5" />}
+              onClick={fetchAll}
+            >
+              Refresh
+            </Button>
+            <Button size="sm" icon={<Plus className="w-3.5 h-3.5" />} onClick={openAssign}>
+              Assign Connector
+            </Button>
+          </div>
         )}
       </div>
 
@@ -300,10 +413,14 @@ export function ProjectConnectorsTab({ projectId, canManage }: Props) {
               idx={idx}
               total={connectors.length}
               canManage={canManage}
+              agentStatus={agentStatuses[pc.id] || null}
+              isSyncing={syncingId === pc.id}
               onConfigure={openConfigure}
               onToggle={handleToggle}
               onPriority={handlePriority}
               onRemove={setRemoveTarget}
+              onSync={handleSync}
+              onLogs={openLogs}
             />
           ))}
         </div>
@@ -374,8 +491,8 @@ export function ProjectConnectorsTab({ projectId, canManage }: Props) {
             <Button
               variant="secondary"
               size="sm"
-              icon={testingId === configTarget?.id ? <Loader className="w-3.5 h-3.5 animate-spin" /> : <Activity className="w-3.5 h-3.5" />}
-              onClick={handleTestConnection}
+              icon={testingId === configTarget?.id ? <Loader className="w-3.5 h-3.5 animate-spin" /> : <Zap className="w-3.5 h-3.5" />}
+              onClick={handleAgentTest}
               loading={testingId === configTarget?.id}
               disabled={testingId !== null && testingId !== configTarget?.id}
             >
@@ -391,17 +508,27 @@ export function ProjectConnectorsTab({ projectId, canManage }: Props) {
         <form id="config-form" onSubmit={handleConfigure} className="space-y-4">
           {testResult && (
             <div
-              className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm"
+              className="flex flex-col gap-1.5 px-3 py-2.5 rounded-xl text-sm"
               style={{
-                background: testResult.success ? 'rgba(48,209,88,0.1)' : 'rgba(255,69,58,0.1)',
+                background: testResult.success ? 'rgba(48,209,88,0.08)' : 'rgba(255,69,58,0.08)',
                 border: `1px solid ${testResult.success ? 'rgba(48,209,88,0.2)' : 'rgba(255,69,58,0.2)'}`,
-                color: testResult.success ? '#30D158' : '#FF453A',
               }}
             >
-              {testResult.success ? <CheckCircle className="w-4 h-4 flex-shrink-0" /> : <XCircle className="w-4 h-4 flex-shrink-0" />}
-              <span>{testResult.message}</span>
-              {testResult.ms !== undefined && (
-                <span className="ml-auto text-xs opacity-70">{testResult.ms}ms</span>
+              <div className="flex items-center gap-2" style={{ color: testResult.success ? '#30D158' : '#FF453A' }}>
+                {testResult.success
+                  ? <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                  : <XCircle className="w-4 h-4 flex-shrink-0" />}
+                <span className="flex-1">{testResult.message}</span>
+                {testResult.ms !== undefined && (
+                  <span className="ml-auto text-xs opacity-70 flex-shrink-0">{testResult.ms}ms</span>
+                )}
+              </div>
+              {testResult.details && Object.keys(testResult.details).length > 0 && (
+                <div className="text-xs text-neutral-500 pl-6 space-y-0.5">
+                  {Object.entries(testResult.details).slice(0, 4).map(([k, v]) => (
+                    <div key={k}><span className="text-neutral-400">{k}:</span> {String(v)}</div>
+                  ))}
+                </div>
               )}
             </div>
           )}
@@ -435,6 +562,61 @@ export function ProjectConnectorsTab({ projectId, canManage }: Props) {
             </div>
           )}
         </form>
+      </Modal>
+
+      <Modal
+        open={!!logsTarget}
+        onClose={() => setLogsTarget(null)}
+        title={`Execution Logs — ${logsTarget?.name || ''}`}
+        subtitle="Last 30 agent executions, newest first"
+        size="lg"
+        footer={
+          <Button variant="secondary" onClick={() => setLogsTarget(null)}>Close</Button>
+        }
+      >
+        {logsLoading ? (
+          <div className="space-y-2">
+            {[1, 2, 3, 4, 5].map(i => (
+              <div key={i} className="h-10 bg-neutral-100 rounded-xl animate-pulse" />
+            ))}
+          </div>
+        ) : logs.length === 0 ? (
+          <div className="py-8 text-center text-sm text-neutral-400">
+            No executions recorded yet. Run a test or sync to generate logs.
+          </div>
+        ) : (
+          <div className="space-y-1.5 max-h-96 overflow-y-auto pr-1">
+            {logs.map(log => {
+              const outcomeMeta = OUTCOME_META[log.outcome] || { label: log.outcome, color: '#8E8E93' };
+              return (
+                <div key={log.id} className="flex items-center gap-3 px-3 py-2 rounded-xl bg-neutral-50 text-xs">
+                  <span
+                    className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                    style={{ background: outcomeMeta.color }}
+                  />
+                  <span className="font-medium w-20 flex-shrink-0" style={{ color: outcomeMeta.color }}>
+                    {outcomeMeta.label}
+                  </span>
+                  <span className="text-neutral-400 capitalize w-14 flex-shrink-0">
+                    {log.triggered_by.replace('_', ' ')}
+                  </span>
+                  {log.response_time_ms != null && (
+                    <span className="font-mono text-neutral-500 w-14 flex-shrink-0">{log.response_time_ms}ms</span>
+                  )}
+                  {log.error_message && (
+                    <span className="text-neutral-400 truncate flex-1" title={log.error_message}>
+                      {log.error_message}
+                    </span>
+                  )}
+                  <span className="ml-auto text-neutral-400 flex-shrink-0 flex items-center gap-1">
+                    <Clock className="w-2.5 h-2.5" />
+                    {formatRelativeTime(log.executed_at)}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </Modal>
 
       <ConfirmModal
@@ -544,29 +726,36 @@ function ConfigFieldInput({
 }
 
 function ConnectorRow({
-  pc, idx, total, canManage, onConfigure, onToggle, onPriority, onRemove,
+  pc, idx, total, canManage, agentStatus, isSyncing,
+  onConfigure, onToggle, onPriority, onRemove, onSync, onLogs,
 }: {
   pc: ProjectConnector;
   idx: number;
   total: number;
   canManage: boolean;
+  agentStatus: ConnectorAgentStatus | null;
+  isSyncing: boolean;
   onConfigure: (pc: ProjectConnector) => void;
   onToggle: (pc: ProjectConnector) => void;
   onPriority: (pc: ProjectConnector, dir: 'up' | 'down') => void;
   onRemove: (pc: ProjectConnector) => void;
+  onSync: (pc: ProjectConnector) => void;
+  onLogs: (pc: ProjectConnector) => void;
 }) {
   const catalog = pc.catalog_entry;
+  const hasAgentStatus = !!agentStatus && agentStatus.total_executions > 0;
   return (
     <div className={cn(
       'flex items-center gap-3 p-3 bg-white rounded-2xl border transition-all group',
       pc.is_enabled ? 'border-neutral-100 hover:border-neutral-200' : 'border-neutral-100 opacity-60',
     )}>
-      <ConnectorIcon icon={catalog?.icon} color={catalog?.color} name={catalog?.name || pc.name} />
+      <ConnectorIcon color={catalog?.color} name={catalog?.name || pc.name} />
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-sm font-semibold text-neutral-900 truncate">{pc.name}</span>
           <ConnectorStatusBadge status={pc.status} />
+          {hasAgentStatus && <AgentStatusIndicator agentStatus={agentStatus} />}
           {!pc.is_enabled && (
             <span className="text-xs px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-400">Disabled</span>
           )}
@@ -574,19 +763,36 @@ function ConnectorRow({
         <div className="flex items-center gap-2 mt-0.5 text-xs text-neutral-400">
           {catalog && <span className="capitalize">{CATEGORY_LABELS[catalog.category] || catalog.category}</span>}
           {catalog?.vendor && <><span>·</span><span>{catalog.vendor}</span></>}
-          {pc.last_test_at && (
+          {agentStatus?.last_sync_at && (
             <>
               <span>·</span>
-              <span>
-                Last tested{' '}
-                {new Date(pc.last_test_at).toLocaleDateString()}
-                {pc.last_test_response_ms !== undefined && ` (${pc.last_test_response_ms}ms)`}
+              <span className="flex items-center gap-1">
+                <Clock className="w-2.5 h-2.5" />
+                Synced {formatRelativeTime(agentStatus.last_sync_at)}
               </span>
             </>
           )}
-          <span>· Priority {pc.priority}</span>
+          {hasAgentStatus && agentStatus.uptime_percentage != null && (
+            <>
+              <span>·</span>
+              <span>{agentStatus.uptime_percentage}% uptime</span>
+              <span>·</span>
+              <span>{agentStatus.total_executions} runs</span>
+            </>
+          )}
+          {!hasAgentStatus && pc.last_test_at && (
+            <>
+              <span>·</span>
+              <span>Tested {new Date(pc.last_test_at).toLocaleDateString()}</span>
+            </>
+          )}
         </div>
-        {pc.last_test_error && pc.status === 'error' && (
+        {agentStatus?.last_error && agentStatus.health_status !== 'healthy' && (
+          <p className="text-xs mt-0.5 truncate max-w-sm" style={{ color: '#FF453A' }}>
+            {agentStatus.last_error}
+          </p>
+        )}
+        {!agentStatus && pc.last_test_error && pc.status === 'error' && (
           <p className="text-xs mt-0.5 truncate" style={{ color: '#FF453A' }}>{pc.last_test_error}</p>
         )}
       </div>
@@ -608,6 +814,23 @@ function ConnectorRow({
             title="Decrease priority"
           >
             <ChevronDown className="w-3.5 h-3.5" />
+          </button>
+          <button
+            onClick={() => onSync(pc)}
+            disabled={isSyncing}
+            className="p-1.5 rounded-lg text-neutral-400 hover:text-green-600 hover:bg-green-50 disabled:opacity-50 transition-all"
+            title="Run health sync"
+          >
+            {isSyncing
+              ? <Loader className="w-3.5 h-3.5 animate-spin" />
+              : <Activity className="w-3.5 h-3.5" />}
+          </button>
+          <button
+            onClick={() => onLogs(pc)}
+            className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-600 hover:bg-neutral-50 transition-all"
+            title="View execution logs"
+          >
+            <List className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => onToggle(pc)}
