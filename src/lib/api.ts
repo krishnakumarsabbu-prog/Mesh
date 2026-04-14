@@ -92,6 +92,14 @@ export const healthApi = {
 export const chatApi = {
   message: (message: string, context?: object) =>
     apiClient.post('/chatbot/message', { message, context }),
+  createSession: (data: { project_id?: string; title?: string }) =>
+    apiClient.post('/chat/session', data),
+  listSessions: () => apiClient.get('/chat/sessions'),
+  getHistory: (sessionId: string) => apiClient.get(`/chat/history/${sessionId}`),
+  deleteSession: (sessionId: string) => apiClient.delete(`/chat/session/${sessionId}`),
+  suggestedPrompts: () => apiClient.get('/chat/suggested-prompts'),
+  submitFeedback: (data: { session_id: string; message_id: string; rating: string; comment?: string }) =>
+    apiClient.post('/chat/feedback', data),
 };
 
 export const userApi = {
