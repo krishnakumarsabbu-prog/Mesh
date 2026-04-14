@@ -151,3 +151,37 @@ export interface BreadcrumbItem {
   label: string;
   href?: string;
 }
+
+export type CatalogConnectorCategory = 'observability' | 'apm' | 'itsm' | 'database' | 'messaging' | 'custom';
+export type CatalogConnectorStatus = 'active' | 'disabled' | 'deprecated';
+
+export interface ConnectorCatalogEntry {
+  id: string;
+  slug: string;
+  name: string;
+  description?: string;
+  vendor?: string;
+  category: CatalogConnectorCategory;
+  status: CatalogConnectorStatus;
+  icon?: string;
+  color?: string;
+  tags?: string;
+  is_system: boolean;
+  is_enabled: boolean;
+  config_schema?: Record<string, unknown>;
+  default_config?: Record<string, unknown>;
+  test_definition?: Record<string, unknown>;
+  docs_url?: string;
+  version?: string;
+  created_by?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ConnectorCatalogTestResult {
+  success: boolean;
+  status_code?: number;
+  response_time_ms?: number;
+  error?: string;
+  details?: Record<string, unknown>;
+}

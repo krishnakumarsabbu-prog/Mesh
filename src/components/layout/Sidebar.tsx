@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard, Building2, FolderOpen, Plug, Activity,
   MessageSquare, Settings, ChevronLeft, ChevronRight, Users,
-  Zap, LogOut, Shield,
+  Zap, LogOut, Shield, Library,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUIStore } from '@/store/uiStore';
@@ -23,6 +23,7 @@ const navItems: NavItem[] = [
   { label: 'Lines of Business', href: '/lobs', icon: Building2, description: 'Manage LOBs' },
   { label: 'Projects', href: '/projects', icon: FolderOpen, description: 'All projects' },
   { label: 'Connectors', href: '/connectors', icon: Plug, description: 'Service endpoints' },
+  { label: 'Connector Catalog', href: '/connector-catalog', icon: Library, description: 'Catalog management' },
   { label: 'Health Monitor', href: '/health', icon: Activity, description: 'Real-time health' },
   { label: 'AI Assistant', href: '/chatbot', icon: MessageSquare, description: 'Intelligence layer' },
 ];

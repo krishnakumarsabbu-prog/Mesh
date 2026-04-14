@@ -105,3 +105,15 @@ export const userApi = {
 };
 
 export default apiClient;
+
+export const catalogApi = {
+  list: (params?: { category?: string; enabled_only?: boolean }) =>
+    apiClient.get('/connector-catalog', { params }),
+  create: (data: object) => apiClient.post('/connector-catalog', data),
+  get: (id: string) => apiClient.get(`/connector-catalog/${id}`),
+  update: (id: string, data: object) => apiClient.patch(`/connector-catalog/${id}`, data),
+  enable: (id: string) => apiClient.post(`/connector-catalog/${id}/enable`),
+  disable: (id: string) => apiClient.post(`/connector-catalog/${id}/disable`),
+  test: (id: string, data: object) => apiClient.post(`/connector-catalog/${id}/test`, data),
+  delete: (id: string) => apiClient.delete(`/connector-catalog/${id}`),
+};
