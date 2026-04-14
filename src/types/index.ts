@@ -354,3 +354,168 @@ export interface HealthRunDetail extends HealthRunSummary {
     is_enabled: boolean;
   }>;
 }
+
+export interface ProjectDashboardConnectorSummary {
+  id: string;
+  name: string;
+  slug?: string;
+  category?: string;
+  icon?: string;
+  color?: string;
+  is_enabled: boolean;
+  priority: number;
+  status?: string;
+  health_status: RunHealthStatus | 'unknown';
+  last_sync_at?: string;
+  last_sync_response_ms?: number;
+  uptime_percentage?: number;
+  consecutive_failures: number;
+  total_executions: number;
+  total_failures: number;
+  last_error?: string;
+}
+
+export interface ProjectDashboardSummary {
+  project_id: string;
+  project_name: string;
+  project_color?: string;
+  overall_score?: number;
+  overall_health_status?: RunHealthStatus;
+  last_run_at?: string;
+  last_run_status?: HealthRunStatus;
+  last_run_id?: string;
+  availability_percentage: number;
+  sla_percentage: number;
+  incident_count: number;
+  total_connectors: number;
+  enabled_connectors: number;
+  healthy_connectors: number;
+  degraded_connectors: number;
+  down_connectors: number;
+  unknown_connectors: number;
+  connectors: ProjectDashboardConnectorSummary[];
+}
+
+export interface TrendDataPoint {
+  timestamp: string;
+  score?: number;
+  status?: RunHealthStatus;
+  success_count?: number;
+  failure_count?: number;
+  duration_ms?: number;
+}
+
+export interface AvailabilityDataPoint {
+  timestamp: string;
+  availability: number;
+}
+
+export interface IncidentDataPoint {
+  timestamp: string;
+  incidents: number;
+}
+
+export interface ConnectorTrendDataPoint {
+  timestamp: string;
+  score?: number;
+  status?: RunHealthStatus;
+  response_time_ms?: number;
+  outcome?: string;
+}
+
+export interface ProjectDashboardTrends {
+  time_range: string;
+  hours: number;
+  since: string;
+  overall_trend: TrendDataPoint[];
+  availability_trend: AvailabilityDataPoint[];
+  incident_trend: IncidentDataPoint[];
+  connector_trends: Record<string, ConnectorTrendDataPoint[]>;
+}
+
+export interface MetricDataPoint {
+  timestamp: string;
+  value: number;
+  unit?: string;
+  connector?: string;
+  metric?: string;
+  description?: string;
+}
+
+export interface MetricSeries {
+  key: string;
+  connector?: string;
+  metric_name?: string;
+  unit?: string;
+  description?: string;
+  data_points: MetricDataPoint[];
+  latest_value?: number;
+  avg_value?: number;
+  min_value?: number;
+  max_value?: number;
+}
+
+export interface ConnectorResponseTime {
+  connector: string;
+  avg_ms: number;
+  min_ms: number;
+  max_ms: number;
+  samples: number;
+}
+
+export interface RunDurationDataPoint {
+  timestamp: string;
+  duration_ms: number;
+  score?: number;
+  status?: RunHealthStatus;
+}
+
+export interface ProjectDashboardMetrics {
+  time_range: string;
+  hours: number;
+  metrics: MetricSeries[];
+  connector_response_times: ConnectorResponseTime[];
+  run_durations: RunDurationDataPoint[];
+  score_distribution: { excellent: number; good: number; fair: number; poor: number };
+  total_runs: number;
+}
+
+export interface ConnectorRunHistoryEntry {
+  run_id: string;
+  outcome?: string;
+  health_status?: RunHealthStatus;
+  health_score?: number;
+  response_time_ms?: number;
+  error_message?: string;
+  message?: string;
+  duration_ms?: number;
+  started_at?: string;
+  completed_at?: string;
+  metrics: Array<{ name: string; value: number; unit?: string }>;
+}
+
+export interface ConnectorDrilldown {
+  connector_id: string;
+  connector_name: string;
+  connector_slug?: string;
+  connector_category?: string;
+  connector_icon?: string;
+  connector_color?: string;
+  is_enabled: boolean;
+  priority: number;
+  status?: string;
+  current_health_status: RunHealthStatus | 'unknown';
+  last_sync_at?: string;
+  last_sync_response_ms?: number;
+  uptime_percentage?: number;
+  consecutive_failures: number;
+  total_executions: number;
+  total_failures: number;
+  last_error?: string;
+  last_error_at?: string;
+  run_history: ConnectorRunHistoryEntry[];
+  metrics_by_name: Record<string, Array<{ timestamp: string; value: number; unit?: string }>>;
+  recent_errors: Array<{ timestamp?: string; error?: string; outcome?: string }>;
+  time_range: string;
+  hours: number;
+}

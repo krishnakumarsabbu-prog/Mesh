@@ -164,3 +164,14 @@ export const connectorAgentApi = {
   registry: () =>
     apiClient.get('/connectors/agents/registry'),
 };
+
+export const projectDashboardApi = {
+  summary: (projectId: string) =>
+    apiClient.get(`/dashboard/project/${projectId}/summary`),
+  trends: (projectId: string, params?: { time_range?: string; custom_hours?: number }) =>
+    apiClient.get(`/dashboard/project/${projectId}/trends`, { params }),
+  metrics: (projectId: string, params?: { time_range?: string; custom_hours?: number }) =>
+    apiClient.get(`/dashboard/project/${projectId}/metrics`, { params }),
+  connectorDrilldown: (projectId: string, connectorId: string, params?: { time_range?: string; custom_hours?: number }) =>
+    apiClient.get(`/dashboard/project/${projectId}/connector/${connectorId}`, { params }),
+};
