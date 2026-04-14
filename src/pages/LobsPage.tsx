@@ -243,7 +243,20 @@ export function LobsPage() {
             placeholder="Search LOBs..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 text-sm border border-neutral-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all"
+            className="w-full pl-9 pr-4 py-2.5 text-sm rounded-xl outline-none transition-all duration-150"
+            style={{
+              background: 'var(--app-surface)',
+              border: '1px solid var(--app-border)',
+              color: 'var(--text-primary)',
+            }}
+            onFocus={(e) => {
+              (e.currentTarget as HTMLInputElement).style.borderColor = 'var(--accent)';
+              (e.currentTarget as HTMLInputElement).style.boxShadow = '0 0 0 3px var(--accent-subtle)';
+            }}
+            onBlur={(e) => {
+              (e.currentTarget as HTMLInputElement).style.borderColor = 'var(--app-border)';
+              (e.currentTarget as HTMLInputElement).style.boxShadow = '';
+            }}
           />
           {search && (
             <button
@@ -265,11 +278,12 @@ export function LobsPage() {
               key={key}
               onClick={() => toggleSort(key)}
               className={cn(
-                'flex items-center gap-1 px-2.5 py-1.5 text-xs rounded-lg border transition-all',
+                'flex items-center gap-1 px-2.5 py-1.5 text-xs rounded-lg border transition-all font-medium',
                 sortKey === key
-                  ? 'bg-primary-50 border-primary-200 text-primary-700 font-medium'
-                  : 'bg-white border-neutral-200 text-neutral-500 hover:border-neutral-300'
+                  ? 'bg-primary-50 border-primary-200 text-primary-700'
+                  : 'border-neutral-200 text-neutral-500 hover:border-neutral-300 hover:text-neutral-700'
               )}
+              style={sortKey === key ? undefined : { background: 'var(--app-surface)' }}
             >
               {key === 'name' ? 'Name' : key === 'project_count' ? 'Projects' : 'Members'}
               {sortKey === key && <ArrowUpDown className="w-3 h-3" />}
@@ -278,28 +292,30 @@ export function LobsPage() {
 
           <div className="w-px h-5 bg-neutral-200" />
 
-          <button
-            onClick={() => setViewMode('grid')}
-            className={cn(
-              'p-1.5 rounded-lg border transition-all',
-              viewMode === 'grid'
-                ? 'bg-primary-50 border-primary-200 text-primary-600'
-                : 'bg-white border-neutral-200 text-neutral-400 hover:text-neutral-600'
-            )}
-          >
-            <LayoutGrid className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => setViewMode('table')}
-            className={cn(
-              'p-1.5 rounded-lg border transition-all',
-              viewMode === 'table'
-                ? 'bg-primary-50 border-primary-200 text-primary-600'
-                : 'bg-white border-neutral-200 text-neutral-400 hover:text-neutral-600'
-            )}
-          >
-            <List className="w-4 h-4" />
-          </button>
+          <div className="flex rounded-xl border overflow-hidden" style={{ borderColor: 'var(--app-border)', background: 'var(--app-surface)' }}>
+            <button
+              onClick={() => setViewMode('grid')}
+              className={cn(
+                'p-1.5 transition-all',
+                viewMode === 'grid'
+                  ? 'bg-primary-50 text-primary-600'
+                  : 'text-neutral-400 hover:text-neutral-600'
+              )}
+            >
+              <LayoutGrid className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setViewMode('table')}
+              className={cn(
+                'p-1.5 transition-all',
+                viewMode === 'table'
+                  ? 'bg-primary-50 text-primary-600'
+                  : 'text-neutral-400 hover:text-neutral-600'
+              )}
+            >
+              <List className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -555,10 +571,23 @@ interface LobCardProps {
 function LobCard({ lob, superAdmin, onNavigate, onEdit, onDelete, onManageAdmins }: LobCardProps) {
   return (
     <div
-      className="group relative bg-white rounded-2xl border border-neutral-100 shadow-sm hover:shadow-md hover:border-neutral-200 transition-all duration-200 cursor-pointer overflow-hidden"
+      className="group relative rounded-2xl cursor-pointer overflow-hidden transition-all duration-200"
+      style={{
+        background: 'var(--glass-bg)',
+        border: '1px solid var(--glass-border)',
+        boxShadow: 'var(--shadow-sm)',
+      }}
+      onMouseEnter={(e) => {
+        (e.currentTarget as HTMLElement).style.boxShadow = 'var(--shadow-lg)';
+        (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)';
+      }}
+      onMouseLeave={(e) => {
+        (e.currentTarget as HTMLElement).style.boxShadow = 'var(--shadow-sm)';
+        (e.currentTarget as HTMLElement).style.transform = '';
+      }}
       onClick={onNavigate}
     >
-      <div className="h-1.5 w-full" style={{ backgroundColor: lob.color }} />
+      <div className="h-0.5 w-full" style={{ background: `linear-gradient(90deg, ${lob.color}, ${lob.color}88)` }} />
       <div className="p-5">
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -658,10 +687,10 @@ function LobTable({ lobs, superAdmin, sortKey, sortDir, onSort, onNavigate, onEd
   );
 
   return (
-    <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm overflow-hidden">
+    <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid var(--app-border)', background: 'var(--app-surface)' }}>
       <table className="w-full">
         <thead>
-          <tr className="border-b border-neutral-100 bg-neutral-50">
+          <tr className="border-b" style={{ borderColor: 'var(--app-border)', background: 'var(--app-bg-subtle)' }}>
             <th className="px-5 py-3 text-left"><SortHeader label="Name" k="name" /></th>
             <th className="px-5 py-3 text-left hidden md:table-cell">
               <span className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Description</span>
@@ -753,7 +782,7 @@ interface ColorPickerProps {
 function ColorPicker({ color, onChange }: ColorPickerProps) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label className="text-sm font-medium text-neutral-700">Color</label>
+      <label className="text-xs font-semibold text-neutral-600 tracking-wide uppercase">Color</label>
       <div className="flex items-center gap-2.5 flex-wrap">
         {PRESET_COLORS.map((c) => (
           <button

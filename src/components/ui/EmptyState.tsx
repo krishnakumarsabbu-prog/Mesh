@@ -23,10 +23,10 @@ export function EmptyState({ icon: Icon, title, description, action, className, 
       {Icon && (
         <div
           className={cn(
-            'rounded-2xl flex items-center justify-center mb-4',
+            'rounded-2xl flex items-center justify-center mb-4 transition-transform duration-200 hover:scale-105',
             compact ? 'w-10 h-10' : 'w-14 h-14',
           )}
-          style={{ background: 'var(--app-bg-muted)' }}
+          style={{ background: 'var(--app-bg-muted)', border: '1px solid var(--app-border)' }}
         >
           <Icon
             className={cn(compact ? 'w-5 h-5' : 'w-6 h-6')}
@@ -37,7 +37,7 @@ export function EmptyState({ icon: Icon, title, description, action, className, 
       )}
       <p
         className={cn('font-semibold tracking-tight', compact ? 'text-sm' : 'text-base')}
-        style={{ color: 'var(--text-secondary)' }}
+        style={{ color: 'var(--text-primary)' }}
       >
         {title}
       </p>

@@ -183,7 +183,20 @@ export function UsersPage() {
               placeholder="Search by name or email..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 text-sm bg-neutral-50 border border-neutral-200 rounded-xl outline-none focus:bg-white focus:border-primary-300 focus:shadow-[0_0_0_3px_rgba(10,132,255,0.08)] transition-all"
+              className="w-full pl-9 pr-3 py-2.5 text-sm rounded-xl outline-none transition-all duration-150"
+              style={{
+                background: 'var(--app-surface)',
+                border: '1px solid var(--app-border)',
+                color: 'var(--text-primary)',
+              }}
+              onFocus={(e) => {
+                (e.currentTarget as HTMLInputElement).style.borderColor = 'var(--accent)';
+                (e.currentTarget as HTMLInputElement).style.boxShadow = '0 0 0 3px var(--accent-subtle)';
+              }}
+              onBlur={(e) => {
+                (e.currentTarget as HTMLInputElement).style.borderColor = 'var(--app-border)';
+                (e.currentTarget as HTMLInputElement).style.boxShadow = '';
+              }}
             />
             {search && (
               <button onClick={() => setSearch('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600">
@@ -197,7 +210,12 @@ export function UsersPage() {
               <select
                 value={roleFilter}
                 onChange={(e) => setRoleFilter(e.target.value)}
-                className="appearance-none pl-3 pr-7 py-2 text-sm bg-white border border-neutral-200 rounded-xl outline-none focus:border-primary-300 transition-all cursor-pointer text-neutral-700"
+                className="appearance-none pl-3 pr-7 py-2.5 text-sm rounded-xl outline-none transition-all cursor-pointer"
+                  style={{
+                    background: 'var(--app-surface)',
+                    border: '1px solid var(--app-border)',
+                    color: 'var(--text-secondary)',
+                  }}
               >
                 <option value="">All roles</option>
                 {ALL_ROLES.map((r) => (
@@ -211,7 +229,12 @@ export function UsersPage() {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="appearance-none pl-3 pr-7 py-2 text-sm bg-white border border-neutral-200 rounded-xl outline-none focus:border-primary-300 transition-all cursor-pointer text-neutral-700"
+                className="appearance-none pl-3 pr-7 py-2.5 text-sm rounded-xl outline-none transition-all cursor-pointer"
+                  style={{
+                    background: 'var(--app-surface)',
+                    border: '1px solid var(--app-border)',
+                    color: 'var(--text-secondary)',
+                  }}
               >
                 <option value="">All status</option>
                 <option value="active">Active</option>

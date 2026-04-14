@@ -381,6 +381,15 @@
 .animate-theme-switch { animation: themeSwitch 0.4s ease-out forwards; }
 .animate-glow-pulse { animation: glowPulse 2s ease-in-out infinite; }
 .animate-page-enter { animation: pageEnter 0.35s ease-out forwards; }
+@keyframes modalEnter { 0% { opacity: 0; transform: scale(0.95) translateY(12px); } 60% { transform: scale(1.01) translateY(-2px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
+@keyframes dropdownIn { 0% { opacity: 0; transform: scale(0.95) translateY(-6px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
+@keyframes notificationIn { 0% { opacity: 0; transform: translateX(16px) scale(0.96); } 100% { opacity: 1; transform: translateX(0) scale(1); } }
+@keyframes slideInUp { 0% { opacity: 0; transform: translateY(16px); } 100% { opacity: 1; transform: translateY(0); } }
+
+.animate-modal-enter { animation: modalEnter 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+.animate-dropdown-in { animation: dropdownIn 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.animate-notification-in { animation: notificationIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.animate-slide-in-up { animation: slideInUp 0.3s ease-out forwards; }
 
 .stagger > *:nth-child(1) { animation-delay: 0ms; }
 .stagger > *:nth-child(2) { animation-delay: 55ms; }
@@ -394,3 +403,59 @@
 .recharts-cartesian-grid-horizontal line,
 .recharts-cartesian-grid-vertical line { stroke: rgba(0,0,0,0.05); }
 .recharts-tooltip-wrapper { outline: none !important; }
+
+/* Premium input styling for dark theme */
+.dark input, .dark textarea, .dark select {
+  background: rgba(255,255,255,0.05) !important;
+  border-color: rgba(255,255,255,0.1) !important;
+  color: var(--text-primary) !important;
+}
+.dark input:focus, .dark textarea:focus, .dark select:focus {
+  background: rgba(255,255,255,0.08) !important;
+  border-color: rgba(52,211,153,0.4) !important;
+}
+.dark input::placeholder, .dark textarea::placeholder { color: var(--text-muted) !important; }
+
+/* Table row hover with no click - still subtle */
+tr:hover td { transition: background 100ms ease; }
+
+/* Filter chip style */
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 1px solid var(--app-border);
+  background: var(--app-surface);
+  color: var(--text-secondary);
+  transition: all 140ms ease;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.filter-chip:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-subtle);
+}
+.filter-chip.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-subtle);
+}
+
+/* Improved form field in dark mode for native selects */
+.dark .appearance-none { color-scheme: dark; }
+
+/* Premium hover glow for interactive elements */
+.hover-glow {
+  transition: box-shadow 200ms ease, transform 150ms ease;
+}
+.hover-glow:hover {
+  box-shadow: 0 0 0 3px var(--accent-subtle);
+}
+
+/* Improved scrollbar for content areas */
+.scroll-area { overflow-y: auto; scrollbar-gutter: stable; }

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
+import { Check } from 'lucide-react';
 
 export interface DropdownItem {
   label: string;
@@ -9,6 +10,8 @@ export interface DropdownItem {
   danger?: boolean;
   disabled?: boolean;
   divider?: boolean;
+  description?: string;
+  checked?: boolean;
 }
 
 interface DropdownProps {
@@ -16,9 +19,10 @@ interface DropdownProps {
   items: DropdownItem[];
   align?: 'left' | 'right';
   className?: string;
+  width?: string;
 }
 
-export function Dropdown({ trigger, items, align = 'left', className }: DropdownProps) {
+export function Dropdown({ trigger, items, align = 'left', className, width = 'min-w-[180px]' }: DropdownProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -26,8 +30,15 @@ export function Dropdown({ trigger, items, align = 'left', className }: Dropdown
     function handler(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
     }
+    function keyHandler(e: KeyboardEvent) {
+      if (e.key === 'Escape') setOpen(false);
+    }
     document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
+    document.addEventListener('keydown', keyHandler);
+    return () => {
+      document.removeEventListener('mousedown', handler);
+      document.removeEventListener('keydown', keyHandler);
+    };
   }, []);
 
   return (
@@ -36,15 +47,27 @@ export function Dropdown({ trigger, items, align = 'left', className }: Dropdown
       {open && (
         <div
           className={cn(
-            'absolute top-full z-50 mt-1.5 min-w-[160px] bg-white rounded-2xl border border-neutral-100 py-1.5 animate-scale-in',
+            'absolute top-full z-50 mt-2 py-1.5 rounded-2xl border overflow-hidden',
+            'animate-dropdown-in',
+            width,
             align === 'right' ? 'right-0' : 'left-0',
             className,
           )}
-          style={{ boxShadow: '0 8px 32px -6px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.05)' }}
+          style={{
+            background: 'var(--app-surface-raised)',
+            borderColor: 'var(--app-border)',
+            boxShadow: 'var(--shadow-xl)',
+          }}
         >
           {items.map((item, i) => {
             if (item.divider) {
-              return <div key={i} className="my-1 border-t border-neutral-50" />;
+              return (
+                <div
+                  key={i}
+                  className="my-1.5 mx-3"
+                  style={{ borderTop: '1px solid var(--app-border)' }}
+                />
+              );
             }
             return (
               <button
@@ -52,15 +75,38 @@ export function Dropdown({ trigger, items, align = 'left', className }: Dropdown
                 disabled={item.disabled}
                 onClick={() => { item.onClick?.(); setOpen(false); }}
                 className={cn(
-                  'w-full flex items-center gap-2.5 px-4 py-2 text-sm transition-colors text-left',
+                  'w-full flex items-center gap-3 px-4 py-2 text-sm transition-all duration-100 text-left group',
                   item.danger
                     ? 'text-danger-500 hover:bg-danger-50'
-                    : 'text-neutral-700 hover:bg-neutral-50',
-                  item.disabled && 'opacity-40 cursor-not-allowed',
+                    : 'hover:bg-neutral-50',
+                  item.disabled && 'opacity-40 cursor-not-allowed pointer-events-none',
                 )}
+                style={item.danger ? undefined : { color: 'var(--text-secondary)' }}
               >
-                {item.icon && <span className="flex-shrink-0 text-current opacity-60">{item.icon}</span>}
-                {item.label}
+                {item.icon && (
+                  <span
+                    className={cn(
+                      'flex-shrink-0 transition-colors duration-100',
+                      item.danger ? 'text-danger-400' : 'text-neutral-400 group-hover:text-neutral-600',
+                    )}
+                  >
+                    {item.icon}
+                  </span>
+                )}
+                <span className="flex-1 min-w-0">
+                  <span className="block font-medium leading-tight">{item.label}</span>
+                  {item.description && (
+                    <span
+                      className="block text-xs mt-0.5 font-normal leading-tight"
+                      style={{ color: 'var(--text-muted)' }}
+                    >
+                      {item.description}
+                    </span>
+                  )}
+                </span>
+                {item.checked && (
+                  <Check className="w-3.5 h-3.5 text-primary-500 flex-shrink-0" />
+                )}
               </button>
             );
           })}

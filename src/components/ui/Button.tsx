@@ -22,11 +22,35 @@ export function Button({
   ...props
 }: ButtonProps) {
   const variants = {
-    primary: 'bg-primary-500 text-white hover:bg-primary-600 active:bg-primary-700 shadow-sm',
-    secondary: 'bg-white text-neutral-700 border border-neutral-200 hover:bg-neutral-50 hover:border-neutral-300 shadow-sm',
-    ghost: 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900',
-    danger: 'bg-danger text-white hover:bg-red-600 active:bg-red-700 shadow-sm',
-    success: 'bg-success text-white hover:bg-green-600 shadow-sm',
+    primary: [
+      'bg-primary-500 text-white border border-primary-500',
+      'hover:bg-primary-600 hover:border-primary-600 hover:shadow-md hover:shadow-primary-500/20',
+      'active:bg-primary-700 active:scale-[0.98]',
+      'shadow-sm shadow-primary-500/25',
+    ].join(' '),
+    secondary: [
+      'bg-white text-neutral-700 border border-neutral-200',
+      'hover:bg-neutral-50 hover:border-neutral-300 hover:shadow-sm',
+      'active:bg-neutral-100 active:scale-[0.98]',
+      'shadow-xs',
+    ].join(' '),
+    ghost: [
+      'text-neutral-600 border border-transparent',
+      'hover:bg-neutral-100 hover:text-neutral-900 hover:border-neutral-200',
+      'active:bg-neutral-200 active:scale-[0.98]',
+    ].join(' '),
+    danger: [
+      'bg-danger text-white border border-danger',
+      'hover:bg-red-600 hover:border-red-600 hover:shadow-md hover:shadow-red-500/20',
+      'active:bg-red-700 active:scale-[0.98]',
+      'shadow-sm shadow-red-500/20',
+    ].join(' '),
+    success: [
+      'bg-success text-white border border-success',
+      'hover:bg-green-600 hover:border-green-600 hover:shadow-md hover:shadow-green-500/20',
+      'active:bg-green-700 active:scale-[0.98]',
+      'shadow-sm shadow-green-500/20',
+    ].join(' '),
   };
 
   const sizes = {
@@ -39,7 +63,10 @@ export function Button({
   return (
     <button
       className={cn(
-        'inline-flex items-center justify-center font-medium transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:ring-offset-1',
+        'inline-flex items-center justify-center font-semibold',
+        'transition-all duration-150',
+        'disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none',
+        'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/40 focus-visible:ring-offset-1',
         variants[variant],
         sizes[size],
         className
@@ -47,9 +74,13 @@ export function Button({
       disabled={disabled || loading}
       {...props}
     >
-      {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : icon}
+      {loading ? (
+        <Loader2 className={cn('animate-spin', size === 'xs' ? 'w-3 h-3' : 'w-4 h-4')} />
+      ) : (
+        icon && <span className="flex-shrink-0">{icon}</span>
+      )}
       {children}
-      {!loading && iconRight}
+      {!loading && iconRight && <span className="flex-shrink-0">{iconRight}</span>}
     </button>
   );
 }

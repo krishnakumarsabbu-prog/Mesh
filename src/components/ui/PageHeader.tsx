@@ -11,14 +11,24 @@ interface PageHeaderProps {
 
 export function PageHeader({ title, subtitle, actions, className, badge }: PageHeaderProps) {
   return (
-    <div className={cn('flex items-start justify-between gap-4 mb-6', className)}>
+    <div className={cn('flex items-center justify-between gap-4 mb-6', className)}>
       <div className="min-w-0">
         <div className="flex items-center gap-2.5">
-          <h2 className="text-xl font-bold text-neutral-900 tracking-tight leading-tight truncate">{title}</h2>
+          <h2
+            className="text-xl font-bold tracking-tight leading-tight truncate"
+            style={{ color: 'var(--text-primary)' }}
+          >
+            {title}
+          </h2>
           {badge}
         </div>
         {subtitle && (
-          <p className="text-sm text-neutral-500 mt-0.5 leading-relaxed">{subtitle}</p>
+          <p
+            className="text-sm mt-0.5 leading-relaxed"
+            style={{ color: 'var(--text-muted)' }}
+          >
+            {subtitle}
+          </p>
         )}
       </div>
       {actions && (

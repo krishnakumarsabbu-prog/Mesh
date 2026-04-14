@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { X } from 'lucide-react';
+import React, { useEffect, useCallback } from 'react';
+import { X, TriangleAlert as AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from './Button';
 
@@ -11,6 +11,7 @@ interface ModalProps {
   size?: 'sm' | 'md' | 'lg' | 'xl';
   footer?: React.ReactNode;
   children: React.ReactNode;
+  noPadding?: boolean;
 }
 
 const sizes = {
@@ -20,47 +21,93 @@ const sizes = {
   xl: 'max-w-4xl',
 };
 
-export function Modal({ open, onClose, title, subtitle, size = 'md', footer, children }: ModalProps) {
+export function Modal({ open, onClose, title, subtitle, size = 'md', footer, children, noPadding = false }: ModalProps) {
+  const handleKey = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Escape') onClose();
+  }, [onClose]);
+
   useEffect(() => {
     if (open) {
       document.body.style.overflow = 'hidden';
+      document.addEventListener('keydown', handleKey);
     } else {
       document.body.style.overflow = '';
     }
-    return () => { document.body.style.overflow = ''; };
-  }, [open]);
+    return () => {
+      document.body.style.overflow = '';
+      document.removeEventListener('keydown', handleKey);
+    };
+  }, [open, handleKey]);
 
   if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div
-        className="absolute inset-0 bg-black/30 backdrop-blur-sm animate-fade-in"
+        className="absolute inset-0 modal-backdrop animate-fade-in"
         onClick={onClose}
       />
       <div
         className={cn(
-          'relative w-full bg-white rounded-3xl shadow-modal animate-scale-in overflow-hidden',
-          sizes[size]
+          'relative w-full rounded-3xl overflow-hidden animate-modal-enter',
+          sizes[size],
         )}
+        style={{
+          background: 'var(--app-surface-raised)',
+          boxShadow: 'var(--shadow-modal)',
+          border: '1px solid var(--app-border)',
+        }}
       >
         {(title || subtitle) && (
-          <div className="flex items-start justify-between p-6 border-b border-neutral-100">
-            <div>
-              {title && <h2 className="text-lg font-semibold text-neutral-900 tracking-tight">{title}</h2>}
-              {subtitle && <p className="text-sm text-neutral-500 mt-0.5">{subtitle}</p>}
+          <div
+            className="flex items-start justify-between px-6 py-5"
+            style={{ borderBottom: '1px solid var(--app-border)' }}
+          >
+            <div className="flex-1 min-w-0 pr-4">
+              {title && (
+                <h2
+                  className="text-base font-bold tracking-tight leading-tight"
+                  style={{ color: 'var(--text-primary)' }}
+                >
+                  {title}
+                </h2>
+              )}
+              {subtitle && (
+                <p className="text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                  {subtitle}
+                </p>
+              )}
             </div>
             <button
               onClick={onClose}
-              className="p-1.5 rounded-xl text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 transition-all"
+              className="flex-shrink-0 p-1.5 rounded-xl transition-all duration-150"
+              style={{ color: 'var(--text-muted)' }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLElement).style.background = 'var(--app-bg-muted)';
+                (e.currentTarget as HTMLElement).style.color = 'var(--text-primary)';
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.background = '';
+                (e.currentTarget as HTMLElement).style.color = 'var(--text-muted)';
+              }}
             >
               <X className="w-4 h-4" />
             </button>
           </div>
         )}
-        <div className="p-6">{children}</div>
+
+        <div className={cn(noPadding ? '' : 'px-6 py-5')}>
+          {children}
+        </div>
+
         {footer && (
-          <div className="flex items-center justify-end gap-3 px-6 py-4 bg-neutral-50 border-t border-neutral-100">
+          <div
+            className="flex items-center justify-end gap-2.5 px-6 py-4"
+            style={{
+              borderTop: '1px solid var(--app-border)',
+              background: 'var(--app-bg-subtle)',
+            }}
+          >
             {footer}
           </div>
         )}
@@ -88,16 +135,35 @@ export function ConfirmModal({
     <Modal
       open={open}
       onClose={onClose}
-      title={title}
       size="sm"
       footer={
         <>
-          <Button variant="secondary" onClick={onClose}>Cancel</Button>
-          <Button variant={variant} onClick={onConfirm} loading={loading}>{confirmLabel}</Button>
+          <Button variant="secondary" onClick={onClose} size="sm">Cancel</Button>
+          <Button variant={variant} onClick={onConfirm} loading={loading} size="sm">{confirmLabel}</Button>
         </>
       }
     >
-      <p className="text-sm text-neutral-600">{message}</p>
+      <div className="flex gap-4">
+        {variant === 'danger' && (
+          <div
+            className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0"
+            style={{ background: 'rgba(255,69,58,0.1)' }}
+          >
+            <AlertTriangle className="w-5 h-5" style={{ color: '#FF453A' }} />
+          </div>
+        )}
+        <div className="flex-1 min-w-0">
+          <p
+            className="text-sm font-semibold mb-1"
+            style={{ color: 'var(--text-primary)' }}
+          >
+            {title}
+          </p>
+          <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+            {message}
+          </p>
+        </div>
+      </div>
     </Modal>
   );
 }
