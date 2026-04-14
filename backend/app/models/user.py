@@ -35,12 +35,13 @@ class User(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    lob_memberships = relationship("LobMember", back_populates="user")
+    lob_memberships = relationship("LobMember", back_populates="user", lazy="selectin")
     role_assignments = relationship(
         "UserRoleAssignment",
         foreign_keys="UserRoleAssignment.user_id",
         back_populates="user",
         cascade="all, delete-orphan",
+        lazy="selectin",
     )
 
 
