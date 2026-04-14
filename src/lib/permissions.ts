@@ -49,3 +49,11 @@ export const ALL_ROLES: UserRole[] = [
   'analyst',
   'viewer',
 ];
+
+export function isLobAdmin(role: UserRole): boolean {
+  return ['super_admin', 'lob_admin', 'admin'].includes(role);
+}
+
+export function canManageProjects(role: UserRole): boolean {
+  return ['super_admin', 'lob_admin', 'project_admin', 'admin'].includes(role);
+}

@@ -69,6 +69,10 @@ export const projectApi = {
   get: (id: string) => apiClient.get(`/projects/${id}`),
   update: (id: string, data: object) => apiClient.patch(`/projects/${id}`, data),
   delete: (id: string) => apiClient.delete(`/projects/${id}`),
+  getMembers: (id: string) => apiClient.get(`/projects/${id}/members`),
+  addMember: (id: string, data: object) => apiClient.post(`/projects/${id}/members`, data),
+  updateMember: (id: string, memberId: string, data: object) => apiClient.patch(`/projects/${id}/members/${memberId}`, data),
+  removeMember: (id: string, memberId: string) => apiClient.delete(`/projects/${id}/members/${memberId}`),
 };
 
 export const connectorApi = {

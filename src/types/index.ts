@@ -57,6 +57,20 @@ export interface LobMember {
   user_avatar_url?: string;
 }
 
+export type ProjectMemberRole = 'project_admin' | 'project_user';
+
+export interface ProjectMember {
+  id: string;
+  project_id: string;
+  user_id: string;
+  role: ProjectMemberRole;
+  assigned_by?: string;
+  joined_at: string;
+  user_email?: string;
+  user_full_name?: string;
+  user_avatar_url?: string;
+}
+
 export interface Project {
   id: string;
   name: string;
@@ -74,6 +88,7 @@ export interface Project {
   healthy_count: number;
   degraded_count: number;
   down_count: number;
+  member_count: number;
 }
 
 export type ConnectorType = 'rest_api' | 'database' | 'message_queue' | 'grpc' | 'graphql' | 'websocket' | 'custom';

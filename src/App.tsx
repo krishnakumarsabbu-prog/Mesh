@@ -6,6 +6,7 @@ import { DashboardPage } from '@/pages/DashboardPage';
 import { LobsPage } from '@/pages/LobsPage';
 import { LobDetailPage } from '@/pages/LobDetailPage';
 import { ProjectsPage } from '@/pages/ProjectsPage';
+import { ProjectDetailPage } from '@/pages/ProjectDetailPage';
 import { ConnectorsPage } from '@/pages/ConnectorsPage';
 import { ConnectorCatalogPage } from '@/pages/ConnectorCatalogPage';
 import { HealthPage } from '@/pages/HealthPage';
@@ -50,6 +51,7 @@ export default function App() {
             <Route path="lobs" element={<ErrorBoundary><LobsPage /></ErrorBoundary>} />
             <Route path="lobs/:lobId" element={<ErrorBoundary><LobDetailPage /></ErrorBoundary>} />
             <Route path="projects" element={<ErrorBoundary><ProjectsPage /></ErrorBoundary>} />
+            <Route path="projects/:projectId" element={<ErrorBoundary><ProjectDetailPage /></ErrorBoundary>} />
             <Route path="connectors" element={<ErrorBoundary><ConnectorsPage /></ErrorBoundary>} />
             <Route path="connector-catalog" element={<ErrorBoundary><ConnectorCatalogPage /></ErrorBoundary>} />
             <Route path="health" element={<ErrorBoundary><HealthPage /></ErrorBoundary>} />

@@ -1,9 +1,10 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from typing import List, Optional
-from app.models.project import Project
+from app.models.project import Project, ProjectMember, ProjectMemberRole
 from app.models.connector import Connector, ConnectorStatus
-from app.schemas.project import ProjectCreate, ProjectUpdate
+from app.models.user import User
+from app.schemas.project import ProjectCreate, ProjectUpdate, ProjectMemberCreate, ProjectMemberUpdate
 import uuid
 
 
@@ -24,10 +25,15 @@ class ProjectService:
         await db.flush()
         return project
 
-    async def get_all(self, db: AsyncSession, lob_id: Optional[str] = None) -> List[dict]:
+    async def get_all(self, db: AsyncSession, lob_id: Optional[str] = None, user_id: Optional[str] = None, user_role: Optional[str] = None) -> List[dict]:
         q = select(Project)
         if lob_id:
             q = q.where(Project.lob_id == lob_id)
+
+        if user_role in ("project_admin", "project_user"):
+            member_subq = select(ProjectMember.project_id).where(ProjectMember.user_id == user_id)
+            q = q.where(Project.id.in_(member_subq))
+
         result = await db.execute(q)
         projects = result.scalars().all()
         output = []
@@ -39,17 +45,41 @@ class ProjectService:
                 Connector.project_id == p.id, Connector.status == ConnectorStatus.DEGRADED))
             down = await db.execute(select(func.count(Connector.id)).where(
                 Connector.project_id == p.id, Connector.status == ConnectorStatus.DOWN))
+            member_count = await db.execute(select(func.count(ProjectMember.id)).where(ProjectMember.project_id == p.id))
             d = {**p.__dict__}
+            d.pop("_sa_instance_state", None)
             d["connector_count"] = conn_count.scalar()
             d["healthy_count"] = healthy.scalar()
             d["degraded_count"] = degraded.scalar()
             d["down_count"] = down.scalar()
+            d["member_count"] = member_count.scalar()
             output.append(d)
         return output
 
     async def get_by_id(self, db: AsyncSession, project_id: str) -> Optional[Project]:
         result = await db.execute(select(Project).where(Project.id == project_id))
         return result.scalar_one_or_none()
+
+    async def get_by_id_with_counts(self, db: AsyncSession, project_id: str) -> Optional[dict]:
+        project = await self.get_by_id(db, project_id)
+        if not project:
+            return None
+        conn_count = await db.execute(select(func.count(Connector.id)).where(Connector.project_id == project_id))
+        healthy = await db.execute(select(func.count(Connector.id)).where(
+            Connector.project_id == project_id, Connector.status == ConnectorStatus.HEALTHY))
+        degraded = await db.execute(select(func.count(Connector.id)).where(
+            Connector.project_id == project_id, Connector.status == ConnectorStatus.DEGRADED))
+        down = await db.execute(select(func.count(Connector.id)).where(
+            Connector.project_id == project_id, Connector.status == ConnectorStatus.DOWN))
+        member_count = await db.execute(select(func.count(ProjectMember.id)).where(ProjectMember.project_id == project_id))
+        d = {**project.__dict__}
+        d.pop("_sa_instance_state", None)
+        d["connector_count"] = conn_count.scalar()
+        d["healthy_count"] = healthy.scalar()
+        d["degraded_count"] = degraded.scalar()
+        d["down_count"] = down.scalar()
+        d["member_count"] = member_count.scalar()
+        return d
 
     async def update(self, db: AsyncSession, project_id: str, data: ProjectUpdate) -> Optional[Project]:
         project = await self.get_by_id(db, project_id)
@@ -67,6 +97,97 @@ class ProjectService:
         await db.delete(project)
         await db.flush()
         return True
+
+    async def get_members(self, db: AsyncSession, project_id: str) -> List[dict]:
+        result = await db.execute(
+            select(ProjectMember, User)
+            .join(User, ProjectMember.user_id == User.id)
+            .where(ProjectMember.project_id == project_id)
+        )
+        rows = result.all()
+        output = []
+        for member, user in rows:
+            d = {**member.__dict__}
+            d.pop("_sa_instance_state", None)
+            d["user_email"] = user.email
+            d["user_full_name"] = user.full_name
+            d["user_avatar_url"] = user.avatar_url
+            output.append(d)
+        return output
+
+    async def add_member(self, db: AsyncSession, project_id: str, data: ProjectMemberCreate, assigned_by: str) -> dict:
+        existing = await db.execute(
+            select(ProjectMember).where(
+                ProjectMember.project_id == project_id,
+                ProjectMember.user_id == data.user_id
+            )
+        )
+        if existing.scalar_one_or_none():
+            raise ValueError("User is already a member of this project")
+
+        member = ProjectMember(
+            id=str(uuid.uuid4()),
+            project_id=project_id,
+            user_id=data.user_id,
+            role=data.role,
+            assigned_by=assigned_by,
+        )
+        db.add(member)
+        await db.flush()
+
+        user_result = await db.execute(select(User).where(User.id == data.user_id))
+        user = user_result.scalar_one_or_none()
+        d = {**member.__dict__}
+        d.pop("_sa_instance_state", None)
+        d["user_email"] = user.email if user else None
+        d["user_full_name"] = user.full_name if user else None
+        d["user_avatar_url"] = user.avatar_url if user else None
+        return d
+
+    async def update_member(self, db: AsyncSession, project_id: str, member_id: str, data: ProjectMemberUpdate) -> Optional[dict]:
+        result = await db.execute(
+            select(ProjectMember).where(
+                ProjectMember.id == member_id,
+                ProjectMember.project_id == project_id
+            )
+        )
+        member = result.scalar_one_or_none()
+        if not member:
+            return None
+        member.role = data.role
+        await db.flush()
+
+        user_result = await db.execute(select(User).where(User.id == member.user_id))
+        user = user_result.scalar_one_or_none()
+        d = {**member.__dict__}
+        d.pop("_sa_instance_state", None)
+        d["user_email"] = user.email if user else None
+        d["user_full_name"] = user.full_name if user else None
+        d["user_avatar_url"] = user.avatar_url if user else None
+        return d
+
+    async def remove_member(self, db: AsyncSession, project_id: str, member_id: str) -> bool:
+        result = await db.execute(
+            select(ProjectMember).where(
+                ProjectMember.id == member_id,
+                ProjectMember.project_id == project_id
+            )
+        )
+        member = result.scalar_one_or_none()
+        if not member:
+            return False
+        await db.delete(member)
+        await db.flush()
+        return True
+
+    async def is_member(self, db: AsyncSession, project_id: str, user_id: str) -> bool:
+        result = await db.execute(
+            select(ProjectMember).where(
+                ProjectMember.project_id == project_id,
+                ProjectMember.user_id == user_id
+            )
+        )
+        return result.scalar_one_or_none() is not None
 
 
 project_service = ProjectService()

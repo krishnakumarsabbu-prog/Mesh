@@ -1,7 +1,7 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
-from app.models.project import ProjectStatus
+from app.models.project import ProjectStatus, ProjectMemberRole
 
 
 class ProjectBase(BaseModel):
@@ -38,6 +38,31 @@ class ProjectResponse(ProjectBase):
     healthy_count: Optional[int] = 0
     degraded_count: Optional[int] = 0
     down_count: Optional[int] = 0
+    member_count: Optional[int] = 0
+
+    class Config:
+        from_attributes = True
+
+
+class ProjectMemberCreate(BaseModel):
+    user_id: str
+    role: ProjectMemberRole = ProjectMemberRole.PROJECT_USER
+
+
+class ProjectMemberUpdate(BaseModel):
+    role: ProjectMemberRole
+
+
+class ProjectMemberResponse(BaseModel):
+    id: str
+    project_id: str
+    user_id: str
+    role: ProjectMemberRole
+    assigned_by: Optional[str]
+    joined_at: datetime
+    user_email: Optional[str] = None
+    user_full_name: Optional[str] = None
+    user_avatar_url: Optional[str] = None
 
     class Config:
         from_attributes = True

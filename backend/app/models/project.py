@@ -13,6 +13,11 @@ class ProjectStatus(str, enum.Enum):
     ARCHIVED = "archived"
 
 
+class ProjectMemberRole(str, enum.Enum):
+    PROJECT_ADMIN = "project_admin"
+    PROJECT_USER = "project_user"
+
+
 class Project(Base):
     __tablename__ = "projects"
 
@@ -32,3 +37,19 @@ class Project(Base):
     lob = relationship("Lob", back_populates="projects")
     connectors = relationship("Connector", back_populates="project")
     health_checks = relationship("HealthCheck", back_populates="project")
+    members = relationship("ProjectMember", back_populates="project", cascade="all, delete-orphan")
+
+
+class ProjectMember(Base):
+    __tablename__ = "project_members"
+
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    project_id = Column(String, ForeignKey("projects.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    role = Column(SAEnum(ProjectMemberRole), default=ProjectMemberRole.PROJECT_USER, nullable=False)
+    assigned_by = Column(String, ForeignKey("users.id"), nullable=True)
+    joined_at = Column(DateTime, default=datetime.utcnow)
+
+    project = relationship("Project", back_populates="members")
+    user = relationship("User", foreign_keys=[user_id])
+    assigner = relationship("User", foreign_keys=[assigned_by])
