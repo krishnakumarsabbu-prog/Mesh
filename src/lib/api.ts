@@ -175,3 +175,32 @@ export const projectDashboardApi = {
   connectorDrilldown: (projectId: string, connectorId: string, params?: { time_range?: string; custom_hours?: number }) =>
     apiClient.get(`/dashboard/project/${projectId}/connector/${connectorId}`, { params }),
 };
+
+export const healthRulesApi = {
+  metadata: () =>
+    apiClient.get('/rules/metadata'),
+  list: (params?: {
+    scope?: string;
+    severity?: string;
+    status?: string;
+    project_id?: string;
+    connector_id?: string;
+    search?: string;
+    page?: number;
+    page_size?: number;
+  }) => apiClient.get('/rules', { params }),
+  get: (ruleId: string) =>
+    apiClient.get(`/rules/${ruleId}`),
+  create: (payload: Record<string, unknown>) =>
+    apiClient.post('/rules', payload),
+  update: (ruleId: string, payload: Record<string, unknown>) =>
+    apiClient.put(`/rules/${ruleId}`, payload),
+  updateStatus: (ruleId: string, status: string) =>
+    apiClient.patch(`/rules/${ruleId}/status`, { status }),
+  delete: (ruleId: string) =>
+    apiClient.delete(`/rules/${ruleId}`),
+  validate: (payload: Record<string, unknown>) =>
+    apiClient.post('/rules/validate', payload),
+  test: (payload: Record<string, unknown>) =>
+    apiClient.post('/rules/test', payload),
+};

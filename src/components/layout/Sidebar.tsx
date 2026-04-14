@@ -25,6 +25,7 @@ const navItems: NavItem[] = [
   { label: 'Connectors', href: '/connectors', icon: Plug, description: 'Service endpoints' },
   { label: 'Connector Catalog', href: '/connector-catalog', icon: Library, description: 'Catalog management' },
   { label: 'Health Monitor', href: '/health', icon: Activity, description: 'Real-time health' },
+  { label: 'Health Rules', href: '/rules', icon: Shield, description: 'Configurable rules engine' },
   { label: 'AI Assistant', href: '/chatbot', icon: MessageSquare, description: 'Intelligence layer' },
 ];
 

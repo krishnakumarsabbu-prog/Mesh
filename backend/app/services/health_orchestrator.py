@@ -60,8 +60,11 @@ from app.services.connector_agent_service import (
 )
 from app.services.health_scoring import ConnectorScoreInput, health_scoring_engine
 from app.connectors.base.registry import ConnectorRegistry
+from app.services.rule_engine import RuleEngine, RuleEvaluationContext
 
 logger = logging.getLogger("healthmesh.orchestrator")
+
+_rule_engine = RuleEngine()
 
 _CONNECTOR_TIMEOUT_SECONDS = 60
 _STATUS_TO_RUN_HEALTH: Dict[str, str] = {
@@ -248,6 +251,10 @@ class HealthOrchestrator:
             score_inputs = self._build_score_inputs(exec_results)
             score_result = health_scoring_engine.calculate(score_inputs)
 
+            rule_factors, final_score, final_status = await self._apply_health_rules(
+                db, project_id, exec_results, score_result, log
+            )
+
             await self._persist_connector_results(db, health_run.id, exec_results, log)
             await self._persist_metrics(db, health_run.id, exec_results)
             await self._persist_raw_payloads(db, health_run.id, exec_results)
@@ -255,14 +262,15 @@ class HealthOrchestrator:
 
             total_ms = int((time.monotonic() - run_start) * 1000)
             health_run.status = HealthRunStatus.COMPLETED
-            health_run.overall_health_status = RunHealthStatus(score_result.overall_health_status)
-            health_run.overall_score = score_result.overall_score
+            health_run.overall_health_status = RunHealthStatus(final_status)
+            health_run.overall_score = final_score
             health_run.success_count = score_result.success_count
             health_run.failure_count = score_result.failure_count
             health_run.skipped_count = score_result.skipped_count
             health_run.total_duration_ms = total_ms
             health_run.completed_at = datetime.utcnow()
-            health_run.contributing_factors = json.dumps(score_result.contributing_factors)
+            all_factors = score_result.contributing_factors + rule_factors
+            health_run.contributing_factors = json.dumps(all_factors)
 
             if score_result.failure_count > 0 and score_result.success_count > 0:
                 health_run.status = HealthRunStatus.PARTIAL
@@ -270,13 +278,14 @@ class HealthOrchestrator:
             await db.flush()
 
             log.info(
-                "Health run completed: score=%.1f status=%s duration=%dms",
-                score_result.overall_score,
-                score_result.overall_health_status,
+                "Health run completed: score=%.1f status=%s duration=%dms rules_applied=%d",
+                final_score,
+                final_status,
                 total_ms,
+                len(rule_factors),
             )
 
-            return self._build_run_response(health_run, exec_results, score_result.contributing_factors)
+            return self._build_run_response(health_run, exec_results, all_factors)
 
         except Exception as exc:
             logger.exception(
@@ -711,6 +720,73 @@ class HealthOrchestrator:
 
         await db.flush()
         log.debug("Agent statuses updated for %d connectors", len(results))
+
+    async def _apply_health_rules(
+        self,
+        db: AsyncSession,
+        project_id: str,
+        exec_results: List[ConnectorExecutionResult],
+        score_result: Any,
+        log: logging.LoggerAdapter,
+    ) -> tuple[List[str], float, str]:
+        """
+        Load and evaluate applicable health rules against the project context.
+
+        Builds a project-level RuleEvaluationContext from the score result,
+        then evaluates per-connector contexts for connector-scoped rules.
+
+        Returns:
+            Tuple of (rule_factor_lines, adjusted_score, final_status)
+        """
+        try:
+            from app.services.health_rule_service import health_rule_service as rule_svc
+            from app.models.health_rule import HealthRuleAuditLog, RuleAuditAction
+            import uuid as _uuid
+
+            rules = await rule_svc.get_applicable_rules(db, project_id)
+            if not rules:
+                return [], score_result.overall_score, score_result.overall_health_status
+
+            failure_count = score_result.failure_count
+            success_count = score_result.success_count
+            total_active = failure_count + success_count
+            availability_pct = (
+                round((success_count / total_active) * 100, 2) if total_active > 0 else 100.0
+            )
+
+            project_context = RuleEvaluationContext(
+                project_id=project_id,
+                connector_id=None,
+                health_status=score_result.overall_health_status,
+                health_score=score_result.overall_score,
+                availability_pct=availability_pct,
+                consecutive_failures=failure_count,
+                incident_count=failure_count,
+            )
+
+            rule_set_result = _rule_engine.evaluate(rules, project_context)
+
+            rule_factor_lines = list(rule_set_result.explanation_lines)
+            adjusted_score = round(
+                min(100.0, max(0.0, score_result.overall_score + rule_set_result.total_score_impact)),
+                2,
+            )
+
+            final_status = rule_set_result.status_override or score_result.overall_health_status
+
+            if rule_set_result.rules_matched > 0:
+                log.info(
+                    "Health rules applied: matched=%d total_impact=%.2f adjusted_score=%.1f",
+                    rule_set_result.rules_matched,
+                    rule_set_result.total_score_impact,
+                    adjusted_score,
+                )
+
+            return rule_factor_lines, adjusted_score, final_status
+
+        except Exception as exc:
+            log.warning("Health rule evaluation failed (non-fatal): %s", exc)
+            return [], score_result.overall_score, score_result.overall_health_status
 
     def _build_run_response(
         self,

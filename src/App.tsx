@@ -14,6 +14,7 @@ import { HealthPage } from '@/pages/HealthPage';
 import { ChatbotPage } from '@/pages/ChatbotPage';
 import { UsersPage } from '@/pages/UsersPage';
 import { SettingsPage } from '@/pages/SettingsPage';
+import { RulesPage } from '@/pages/RulesPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import { NotificationContainer } from '@/components/ui/Notification';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
@@ -66,6 +67,7 @@ export default function App() {
                 </RequireAdmin>
               }
             />
+            <Route path="rules" element={<ErrorBoundary><RulesPage /></ErrorBoundary>} />
             <Route path="settings" element={<ErrorBoundary><SettingsPage /></ErrorBoundary>} />
           </Route>
           <Route path="*" element={<NotFoundPage />} />
