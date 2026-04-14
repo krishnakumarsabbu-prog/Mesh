@@ -19,6 +19,8 @@ import { useAuthStore } from '@/store/authStore';
 import { isLobAdmin, canManageProjects } from '@/lib/permissions';
 import { cn } from '@/lib/utils';
 import { ProjectConnectorsTab } from '@/components/project/ProjectConnectorsTab';
+import { HealthRunPanel } from '@/components/project/HealthRunPanel';
+import { HealthRunDetail } from '@/types';
 
 const MEMBER_ROLE_OPTIONS = [
   { value: 'project_admin', label: 'Project Admin' },
@@ -266,7 +268,12 @@ export function ProjectDetailPage() {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 space-y-6">
+          <HealthRunPanel
+            projectId={project.id}
+            canManage={canManage}
+            onRunComplete={(_run: HealthRunDetail) => fetchAll()}
+          />
           <ProjectConnectorsTab projectId={project.id} canManage={canManage} />
         </div>
 

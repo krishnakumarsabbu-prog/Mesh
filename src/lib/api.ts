@@ -139,6 +139,17 @@ export const projectConnectorApi = {
     apiClient.delete(`/projects/${projectId}/connectors/${pcId}`),
 };
 
+export const healthRunApi = {
+  run: (projectId: string) =>
+    apiClient.post(`/health/run/${projectId}`),
+  history: (projectId: string, params?: { limit?: number; offset?: number }) =>
+    apiClient.get(`/health/history/${projectId}`, { params }),
+  getRun: (runId: string) =>
+    apiClient.get(`/health/run/${runId}`),
+  latest: (projectId: string) =>
+    apiClient.get(`/health/latest/${projectId}`),
+};
+
 export const connectorAgentApi = {
   test: (projectId: string, pcId: string, data?: { config?: Record<string, unknown>; credentials?: Record<string, unknown> }) =>
     apiClient.post(`/projects/${projectId}/connectors/${pcId}/agent/test`, data ?? {}),
