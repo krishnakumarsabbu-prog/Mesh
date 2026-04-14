@@ -3,7 +3,7 @@ from sqlalchemy import select
 from datetime import datetime
 from typing import Optional
 from app.models.user import User
-from app.schemas.user import UserCreate, UserAdminCreate, LoginRequest, TokenResponse
+from app.schemas.user import UserCreate, UserAdminCreate, LoginRequest, TokenResponse, UserResponse
 from app.core.security import verify_password, get_password_hash, create_access_token, create_refresh_token, decode_token
 import uuid
 
@@ -63,7 +63,7 @@ class AuthService:
         return TokenResponse(
             access_token=access_token,
             refresh_token=refresh_token,
-            user=user,
+            user=UserResponse.from_orm_safe(user),
         )
 
     async def get_current_user(self, db: AsyncSession, token: str) -> Optional[User]:
@@ -92,7 +92,7 @@ class AuthService:
         return TokenResponse(
             access_token=access_token,
             refresh_token=new_refresh_token,
-            user=user,
+            user=UserResponse.from_orm_safe(user),
         )
 
     async def change_password(self, db: AsyncSession, user: User, current_password: str, new_password: str) -> None:

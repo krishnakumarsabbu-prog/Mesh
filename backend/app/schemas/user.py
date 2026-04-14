@@ -62,10 +62,22 @@ class UserResponse(BaseModel):
     tenant_id: Optional[str]
     last_login: Optional[datetime]
     created_at: datetime
-    role_assignments: List[RoleAssignmentResponse] = []
 
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}
+
+    @classmethod
+    def from_orm_safe(cls, obj) -> "UserResponse":
+        return cls(
+            id=obj.id,
+            email=obj.email,
+            full_name=obj.full_name,
+            role=obj.role,
+            is_active=obj.is_active,
+            avatar_url=obj.avatar_url,
+            tenant_id=obj.tenant_id,
+            last_login=obj.last_login,
+            created_at=obj.created_at,
+        )
 
 
 class LoginRequest(BaseModel):
