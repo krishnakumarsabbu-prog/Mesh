@@ -11,11 +11,7 @@ interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
 export function Skeleton({ width, height, rounded = 'rounded-lg', animate = true, className, style, ...props }: SkeletonProps) {
   return (
     <div
-      className={cn(
-        'shimmer-bg',
-        rounded,
-        className
-      )}
+      className={cn('shimmer-bg', rounded, className)}
       style={{ width, height, ...style }}
       {...props}
     />
@@ -25,12 +21,12 @@ export function Skeleton({ width, height, rounded = 'rounded-lg', animate = true
 export function CardSkeleton() {
   return (
     <div className="glass-card rounded-2xl p-6">
-      <div className="flex items-center justify-between mb-4">
-        <Skeleton height={16} width={120} />
-        <Skeleton height={24} width={56} rounded="rounded-full" />
+      <div className="flex items-start justify-between mb-5">
+        <Skeleton height={10} width={80} rounded="rounded-full" />
+        <Skeleton height={32} width={32} rounded="rounded-xl" />
       </div>
-      <Skeleton height={36} width={80} className="mb-2" />
-      <Skeleton height={14} width={160} />
+      <Skeleton height={30} width={72} className="mb-2" rounded="rounded-lg" />
+      <Skeleton height={12} width={140} rounded="rounded-full" />
     </div>
   );
 }
@@ -53,6 +49,26 @@ export function StatsSkeleton() {
       {Array.from({ length: 4 }).map((_, i) => (
         <CardSkeleton key={i} />
       ))}
+    </div>
+  );
+}
+
+export function ChartSkeleton({ height = 280 }: { height?: number }) {
+  return (
+    <div className="relative overflow-hidden rounded-xl" style={{ height }}>
+      <div className="shimmer-bg w-full h-full rounded-xl" />
+      <div className="absolute inset-0 flex items-end gap-1.5 px-4 pb-6 opacity-20">
+        {Array.from({ length: 12 }).map((_, i) => (
+          <div
+            key={i}
+            className="flex-1 rounded-t-lg"
+            style={{
+              height: `${30 + Math.sin(i * 0.8) * 25 + Math.random() * 20}%`,
+              background: 'var(--accent)',
+            }}
+          />
+        ))}
+      </div>
     </div>
   );
 }

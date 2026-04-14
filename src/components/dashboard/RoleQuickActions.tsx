@@ -96,7 +96,12 @@ export function RoleQuickActions({ role }: { role: UserRole }) {
 
   return (
     <div>
-      <h3 className="text-sm font-semibold text-neutral-700 mb-3">Quick Access</h3>
+      <p
+        className="text-[11px] font-bold uppercase tracking-[0.1em] mb-3"
+        style={{ color: 'var(--text-muted)' }}
+      >
+        Quick Access
+      </p>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
         {actions.map((action) => {
           const Icon = action.icon;
@@ -105,16 +110,38 @@ export function RoleQuickActions({ role }: { role: UserRole }) {
               key={action.href + action.label}
               to={action.href}
               className={cn(
-                'flex flex-col gap-2.5 p-4 rounded-2xl border border-neutral-100 bg-white',
-                'hover:border-neutral-200 hover:shadow-sm transition-all duration-150 group',
+                'relative flex flex-col gap-3 p-4 rounded-2xl group',
+                'transition-all duration-200',
               )}
+              style={{
+                background: 'var(--glass-bg)',
+                border: '1px solid var(--app-border)',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = 'var(--shadow-lg)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = '';
+                e.currentTarget.style.boxShadow = '';
+              }}
             >
-              <div className={cn('w-8 h-8 rounded-xl flex items-center justify-center', action.bg)}>
-                <Icon className={cn('w-4 h-4', action.color)} />
+              <div className={cn('w-8 h-8 rounded-xl flex items-center justify-center transition-transform duration-200 group-hover:scale-110', action.bg)}>
+                <Icon className={cn('w-4 h-4', action.color)} strokeWidth={1.75} />
               </div>
               <div>
-                <p className="text-sm font-semibold text-neutral-800 leading-tight group-hover:text-neutral-900">{action.label}</p>
-                <p className="text-[11px] text-neutral-400 mt-0.5 leading-snug">{action.description}</p>
+                <p
+                  className="text-[13px] font-semibold leading-tight"
+                  style={{ color: 'var(--text-primary)' }}
+                >
+                  {action.label}
+                </p>
+                <p
+                  className="text-[11px] mt-0.5 leading-snug"
+                  style={{ color: 'var(--text-muted)' }}
+                >
+                  {action.description}
+                </p>
               </div>
             </Link>
           );

@@ -21,16 +21,33 @@ export function EmptyState({ icon: Icon, title, description, action, className, 
       )}
     >
       {Icon && (
-        <div className={cn(
-          'rounded-2xl bg-neutral-100 flex items-center justify-center mb-4',
-          compact ? 'w-10 h-10' : 'w-14 h-14',
-        )}>
-          <Icon className={cn('text-neutral-400', compact ? 'w-5 h-5' : 'w-6 h-6')} strokeWidth={1.5} />
+        <div
+          className={cn(
+            'rounded-2xl flex items-center justify-center mb-4',
+            compact ? 'w-10 h-10' : 'w-14 h-14',
+          )}
+          style={{ background: 'var(--app-bg-muted)' }}
+        >
+          <Icon
+            className={cn(compact ? 'w-5 h-5' : 'w-6 h-6')}
+            style={{ color: 'var(--text-muted)' }}
+            strokeWidth={1.5}
+          />
         </div>
       )}
-      <p className={cn('font-semibold text-neutral-700 tracking-tight', compact ? 'text-sm' : 'text-base')}>{title}</p>
+      <p
+        className={cn('font-semibold tracking-tight', compact ? 'text-sm' : 'text-base')}
+        style={{ color: 'var(--text-secondary)' }}
+      >
+        {title}
+      </p>
       {description && (
-        <p className={cn('text-neutral-400 mt-1 max-w-xs', compact ? 'text-xs' : 'text-sm')}>{description}</p>
+        <p
+          className={cn('mt-1.5 max-w-xs leading-relaxed', compact ? 'text-xs' : 'text-sm')}
+          style={{ color: 'var(--text-muted)' }}
+        >
+          {description}
+        </p>
       )}
       {action && <div className="mt-5">{action}</div>}
     </div>

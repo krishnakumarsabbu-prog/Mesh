@@ -15,14 +15,14 @@ export function Card({
   children,
   ...props
 }: CardProps) {
-  const variants = {
-    default: 'bg-white border border-neutral-200',
+  const variants: Record<string, string> = {
+    default: 'glass-card',
     glass: 'glass-card',
-    elevated: 'bg-white shadow-glass-lg border border-neutral-100',
-    flat: 'bg-ivory-100 border border-neutral-200',
+    elevated: 'glass-elevated',
+    flat: 'surface',
   };
 
-  const paddings = {
+  const paddings: Record<string, string> = {
     none: '',
     sm: 'p-4',
     md: 'p-6',
@@ -35,8 +35,8 @@ export function Card({
         'rounded-2xl',
         variants[variant],
         paddings[padding],
-        hoverable && 'transition-all duration-200 hover:shadow-card-hover hover:-translate-y-px cursor-pointer',
-        className
+        hoverable && 'transition-all duration-200 hover:shadow-card-hover hover:-translate-y-0.5 cursor-pointer',
+        className,
       )}
       {...props}
     >
@@ -55,10 +55,22 @@ export function CardHeader({ title, subtitle, action, className, ...props }: Car
   return (
     <div className={cn('flex items-start justify-between mb-6', className)} {...props}>
       <div>
-        <h3 className="text-base font-semibold text-neutral-900 tracking-tight">{title}</h3>
-        {subtitle && <p className="text-sm text-neutral-500 mt-0.5">{subtitle}</p>}
+        <h3
+          className="text-[14px] font-bold tracking-tight leading-snug"
+          style={{ color: 'var(--text-primary)' }}
+        >
+          {title}
+        </h3>
+        {subtitle && (
+          <p
+            className="text-[12px] mt-0.5"
+            style={{ color: 'var(--text-muted)' }}
+          >
+            {subtitle}
+          </p>
+        )}
       </div>
-      {action && <div className="flex items-center gap-2">{action}</div>}
+      {action && <div className="flex items-center gap-2 flex-shrink-0">{action}</div>}
     </div>
   );
 }
