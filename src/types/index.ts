@@ -200,3 +200,47 @@ export interface ConnectorCatalogTestResult {
   error?: string;
   details?: Record<string, unknown>;
 }
+
+export type ProjectConnectorStatus = 'configured' | 'unconfigured' | 'testing' | 'error';
+
+export interface ProjectConnectorCatalogSnippet {
+  id: string;
+  slug: string;
+  name: string;
+  vendor?: string;
+  category: CatalogConnectorCategory;
+  icon?: string;
+  color?: string;
+  config_schema?: Record<string, unknown>;
+  default_config?: Record<string, unknown>;
+  test_definition?: Record<string, unknown>;
+  docs_url?: string;
+  version?: string;
+}
+
+export interface ProjectConnector {
+  id: string;
+  project_id: string;
+  catalog_entry_id: string;
+  name: string;
+  description?: string;
+  config?: Record<string, unknown>;
+  is_enabled: boolean;
+  priority: number;
+  status: ProjectConnectorStatus;
+  last_test_at?: string;
+  last_test_success?: boolean;
+  last_test_error?: string;
+  last_test_response_ms?: number;
+  assigned_by?: string;
+  created_at: string;
+  updated_at: string;
+  catalog_entry?: ProjectConnectorCatalogSnippet;
+}
+
+export interface ProjectConnectorTestResult {
+  success: boolean;
+  response_time_ms?: number;
+  error?: string;
+  details?: Record<string, unknown>;
+}

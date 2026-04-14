@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import {
   FolderOpen, Plug, CircleCheck as CheckCircle, TriangleAlert as AlertTriangle,
   CircleAlert as AlertCircle, ArrowLeft, Users, Plus, Trash2,
-  Pencil, ChevronRight, Settings,
+  Pencil, Settings,
 } from 'lucide-react';
 import { useUIStore } from '@/store/uiStore';
 import { projectApi, userApi, lobApi } from '@/lib/api';
@@ -18,6 +18,7 @@ import { notify } from '@/store/notificationStore';
 import { useAuthStore } from '@/store/authStore';
 import { isLobAdmin, canManageProjects } from '@/lib/permissions';
 import { cn } from '@/lib/utils';
+import { ProjectConnectorsTab } from '@/components/project/ProjectConnectorsTab';
 
 const MEMBER_ROLE_OPTIONS = [
   { value: 'project_admin', label: 'Project Admin' },
@@ -266,29 +267,7 @@ export function ProjectDetailPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base font-semibold text-neutral-900">Connectors</h2>
-            <Button
-              variant="secondary"
-              size="sm"
-              icon={<ChevronRight className="w-3.5 h-3.5" />}
-              onClick={() => navigate(`/connectors?project_id=${project.id}`)}
-            >
-              View All
-            </Button>
-          </div>
-          <Card>
-            <EmptyState
-              icon={Plug}
-              title="Manage Connectors"
-              description="View and manage connectors for this project."
-              action={
-                <Button size="sm" icon={<ChevronRight className="w-3.5 h-3.5" />} onClick={() => navigate(`/connectors?project_id=${project.id}`)}>
-                  Go to Connectors
-                </Button>
-              }
-            />
-          </Card>
+          <ProjectConnectorsTab projectId={project.id} canManage={canManage} />
         </div>
 
         <div className="space-y-4">

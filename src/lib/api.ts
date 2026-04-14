@@ -121,3 +121,20 @@ export const catalogApi = {
   test: (id: string, data: object) => apiClient.post(`/connector-catalog/${id}/test`, data),
   delete: (id: string) => apiClient.delete(`/connector-catalog/${id}`),
 };
+
+export const projectConnectorApi = {
+  list: (projectId: string) =>
+    apiClient.get(`/projects/${projectId}/connectors`),
+  assign: (projectId: string, data: { catalog_entry_id: string; name: string; description?: string; priority?: number }) =>
+    apiClient.post(`/projects/${projectId}/connectors`, data),
+  get: (projectId: string, pcId: string) =>
+    apiClient.get(`/projects/${projectId}/connectors/${pcId}`),
+  configure: (projectId: string, pcId: string, data: object) =>
+    apiClient.patch(`/projects/${projectId}/connectors/${pcId}/configure`, data),
+  toggle: (projectId: string, pcId: string, is_enabled: boolean) =>
+    apiClient.patch(`/projects/${projectId}/connectors/${pcId}/toggle`, { is_enabled }),
+  test: (projectId: string, pcId: string, data?: object) =>
+    apiClient.post(`/projects/${projectId}/connectors/${pcId}/test`, data ?? {}),
+  remove: (projectId: string, pcId: string) =>
+    apiClient.delete(`/projects/${projectId}/connectors/${pcId}`),
+};
