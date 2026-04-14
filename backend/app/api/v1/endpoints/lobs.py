@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional
 from app.db.base import get_db
 from app.schemas.lob import LobCreate, LobUpdate, LobAdminAssign
 from app.services.lob_service import lob_service
+from app.services.audit_service import audit_service
 from app.api.deps import get_current_user, require_super_admin
 from app.models.user import User
 
@@ -26,6 +27,7 @@ async def list_lobs(
 @router.post("", response_model=dict, status_code=status.HTTP_201_CREATED)
 async def create_lob(
     data: LobCreate,
+    request: Request,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_super_admin),
 ):
@@ -35,6 +37,12 @@ async def create_lob(
         d.pop("_sa_instance_state", None)
         d["project_count"] = 0
         d["member_count"] = 0
+        await audit_service.log(
+            db, action="lob.create", resource_type="lob", resource_id=lob.id,
+            user_id=current_user.id, tenant_id=current_user.tenant_id,
+            ip_address=request.client.host if request.client else None,
+            changes={"name": lob.name},
+        )
         return d
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
@@ -56,12 +64,19 @@ async def get_lob(
 async def update_lob(
     lob_id: str,
     data: LobUpdate,
+    request: Request,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_super_admin),
 ):
     lob = await lob_service.update(db, lob_id, data)
     if not lob:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="LOB not found")
+    await audit_service.log(
+        db, action="lob.update", resource_type="lob", resource_id=lob_id,
+        user_id=current_user.id, tenant_id=current_user.tenant_id,
+        ip_address=request.client.host if request.client else None,
+        changes=data.model_dump(exclude_none=True),
+    )
     lob_data = await lob_service.get_by_id_with_counts(db, lob_id)
     return lob_data
 
@@ -69,11 +84,17 @@ async def update_lob(
 @router.delete("/{lob_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_lob(
     lob_id: str,
+    request: Request,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_super_admin),
 ):
     if not await lob_service.delete(db, lob_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="LOB not found")
+    await audit_service.log(
+        db, action="lob.delete", resource_type="lob", resource_id=lob_id,
+        user_id=current_user.id, tenant_id=current_user.tenant_id,
+        ip_address=request.client.host if request.client else None,
+    )
 
 
 @router.get("/{lob_id}/admins", response_model=List[dict])
@@ -92,6 +113,7 @@ async def get_lob_admins(
 async def assign_lob_admin(
     lob_id: str,
     data: LobAdminAssign,
+    request: Request,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_super_admin),
 ):
@@ -99,6 +121,12 @@ async def assign_lob_admin(
     if not lob:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="LOB not found")
     member = await lob_service.assign_admin(db, lob_id, data.user_id)
+    await audit_service.log(
+        db, action="lob.admin_assign", resource_type="lob", resource_id=lob_id,
+        user_id=current_user.id, tenant_id=current_user.tenant_id,
+        ip_address=request.client.host if request.client else None,
+        changes={"assigned_user_id": data.user_id},
+    )
     d = {**member.__dict__}
     d.pop("_sa_instance_state", None)
     return d
@@ -108,11 +136,18 @@ async def assign_lob_admin(
 async def remove_lob_admin(
     lob_id: str,
     user_id: str,
+    request: Request,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_super_admin),
 ):
     if not await lob_service.remove_admin(db, lob_id, user_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Admin assignment not found")
+    await audit_service.log(
+        db, action="lob.admin_remove", resource_type="lob", resource_id=lob_id,
+        user_id=current_user.id, tenant_id=current_user.tenant_id,
+        ip_address=request.client.host if request.client else None,
+        changes={"removed_user_id": user_id},
+    )
 
 
 @router.get("/{lob_id}/members", response_model=List[dict])

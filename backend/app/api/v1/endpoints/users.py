@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, or_
 from typing import List, Optional
@@ -6,6 +6,7 @@ from app.db.base import get_db
 from app.schemas.user import UserResponse, UserUpdate, UserAdminCreate, RoleAssignmentCreate, RoleAssignmentResponse
 from app.models.user import User, UserRole, UserRoleAssignment
 from app.api.deps import get_current_user, require_admin, require_super_admin, ADMIN_ROLES
+from app.services.audit_service import audit_service
 from app.core.security import get_password_hash
 import uuid
 
@@ -42,6 +43,7 @@ async def list_users(
 @router.post("", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 async def create_user(
     data: UserAdminCreate,
+    request: Request,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_admin),
 ):
@@ -62,6 +64,12 @@ async def create_user(
     )
     db.add(user)
     await db.flush()
+    await audit_service.log(
+        db, action="user.create", resource_type="user", resource_id=user.id,
+        user_id=current_user.id, tenant_id=current_user.tenant_id,
+        ip_address=request.client.host if request.client else None,
+        changes={"email": data.email, "role": str(data.role)},
+    )
     return user
 
 
@@ -85,6 +93,7 @@ async def get_user(
 async def update_user(
     user_id: str,
     data: UserUpdate,
+    request: Request,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -119,12 +128,19 @@ async def update_user(
         setattr(user, key, val)
 
     await db.flush()
+    await audit_service.log(
+        db, action="user.update", resource_type="user", resource_id=user_id,
+        user_id=current_user.id, tenant_id=current_user.tenant_id,
+        ip_address=request.client.host if request.client else None,
+        changes={k: str(v) for k, v in update_data.items() if k != "password"},
+    )
     return user
 
 
 @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def deactivate_user(
     user_id: str,
+    request: Request,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_super_admin),
 ):
@@ -138,12 +154,18 @@ async def deactivate_user(
 
     user.is_active = False
     await db.flush()
+    await audit_service.log(
+        db, action="user.deactivate", resource_type="user", resource_id=user_id,
+        user_id=current_user.id, tenant_id=current_user.tenant_id,
+        ip_address=request.client.host if request.client else None,
+    )
 
 
 @router.post("/{user_id}/roles", response_model=RoleAssignmentResponse, status_code=status.HTTP_201_CREATED)
 async def assign_role(
     user_id: str,
     data: RoleAssignmentCreate,
+    request: Request,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_admin),
 ):
@@ -165,6 +187,12 @@ async def assign_role(
     )
     db.add(assignment)
     await db.flush()
+    await audit_service.log(
+        db, action="user.role_assign", resource_type="user", resource_id=user_id,
+        user_id=current_user.id, tenant_id=current_user.tenant_id,
+        ip_address=request.client.host if request.client else None,
+        changes={"role": str(data.role), "resource_type": data.resource_type, "resource_id": data.resource_id},
+    )
     return assignment
 
 
@@ -172,6 +200,7 @@ async def assign_role(
 async def remove_role(
     user_id: str,
     assignment_id: str,
+    request: Request,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_admin),
 ):
@@ -187,3 +216,9 @@ async def remove_role(
 
     await db.delete(assignment)
     await db.flush()
+    await audit_service.log(
+        db, action="user.role_remove", resource_type="user", resource_id=user_id,
+        user_id=current_user.id, tenant_id=current_user.tenant_id,
+        ip_address=request.client.host if request.client else None,
+        changes={"assignment_id": assignment_id},
+    )

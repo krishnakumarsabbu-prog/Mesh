@@ -1,8 +1,15 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { CircleCheck as CheckCircle, CircleAlert as AlertCircle, TriangleAlert as AlertTriangle, Info, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNotificationStore } from '@/store/notificationStore';
 import { Notification } from '@/types';
+
+const DEFAULT_DURATIONS = {
+  success: 4000,
+  error: 6000,
+  warning: 5000,
+  info: 4000,
+};
 
 const icons = {
   success: CheckCircle,
@@ -46,6 +53,42 @@ function NotificationItem({ notification }: { notification: Notification }) {
   const { remove } = useNotificationStore();
   const Icon = icons[notification.type];
   const s = styles[notification.type];
+  const duration = notification.duration ?? DEFAULT_DURATIONS[notification.type];
+  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+  const progressRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    timerRef.current = setTimeout(() => remove(notification.id), duration);
+
+    const raf = requestAnimationFrame(() => {
+      if (progressRef.current) {
+        progressRef.current.style.transition = `width ${duration}ms linear`;
+        progressRef.current.style.width = '0%';
+      }
+    });
+
+    return () => {
+      clearTimeout(timerRef.current);
+      cancelAnimationFrame(raf);
+    };
+  }, [notification.id, duration, remove]);
+
+  function handleMouseEnter() {
+    clearTimeout(timerRef.current);
+    if (progressRef.current) {
+      const computed = getComputedStyle(progressRef.current).width;
+      progressRef.current.style.transition = 'none';
+      progressRef.current.style.width = computed;
+    }
+  }
+
+  function handleMouseLeave() {
+    timerRef.current = setTimeout(() => remove(notification.id), 1500);
+    if (progressRef.current) {
+      progressRef.current.style.transition = 'width 1500ms linear';
+      progressRef.current.style.width = '0%';
+    }
+  }
 
   return (
     <motion.div
@@ -57,7 +100,9 @@ function NotificationItem({ notification }: { notification: Notification }) {
       role="alert"
       aria-live="polite"
       aria-atomic="true"
-      className="relative flex items-start gap-3 px-4 py-3.5 rounded-2xl overflow-hidden"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      className="relative flex items-start gap-3 px-4 py-3.5 rounded-2xl overflow-hidden cursor-default"
       style={{
         background: s.bg,
         border: `1px solid ${s.border}`,
@@ -70,6 +115,11 @@ function NotificationItem({ notification }: { notification: Notification }) {
       <div
         className="absolute left-0 top-0 bottom-0 w-0.5 rounded-l-2xl"
         style={{ background: s.barColor }}
+      />
+      <div
+        className="absolute bottom-0 left-0 h-0.5"
+        ref={progressRef}
+        style={{ width: '100%', background: s.barColor, opacity: 0.35 }}
       />
       <div
         className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"

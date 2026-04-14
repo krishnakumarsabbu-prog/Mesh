@@ -161,7 +161,7 @@ export function UsersPage() {
   });
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 animate-page-enter">
       <PageHeader
         title="Users"
         subtitle={`${users.length} team member${users.length !== 1 ? 's' : ''}`}
@@ -175,31 +175,40 @@ export function UsersPage() {
       />
 
       <Card padding="none">
-        <div className="px-5 py-4 border-b border-neutral-50 flex flex-col sm:flex-row gap-3">
+        <div
+          className="px-5 py-4 border-b flex flex-col sm:flex-row gap-3"
+          style={{ borderColor: 'var(--app-border)' }}
+        >
           <div className="relative flex-1 max-w-xs">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-neutral-400 pointer-events-none" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none" style={{ color: 'var(--text-muted)' }} />
             <input
               type="text"
               placeholder="Search by name or email..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-3 py-2.5 text-sm rounded-xl outline-none transition-all duration-150"
+              className="w-full pl-9 pr-8 py-2.5 text-[13px] rounded-xl outline-none transition-all duration-150"
               style={{
                 background: 'var(--app-surface)',
                 border: '1px solid var(--app-border)',
                 color: 'var(--text-primary)',
               }}
               onFocus={(e) => {
-                (e.currentTarget as HTMLInputElement).style.borderColor = 'var(--accent)';
-                (e.currentTarget as HTMLInputElement).style.boxShadow = '0 0 0 3px var(--accent-subtle)';
+                e.currentTarget.style.borderColor = 'var(--accent)';
+                e.currentTarget.style.boxShadow = '0 0 0 3px var(--accent-subtle)';
               }}
               onBlur={(e) => {
-                (e.currentTarget as HTMLInputElement).style.borderColor = 'var(--app-border)';
-                (e.currentTarget as HTMLInputElement).style.boxShadow = '';
+                e.currentTarget.style.borderColor = 'var(--app-border)';
+                e.currentTarget.style.boxShadow = '';
               }}
             />
             {search && (
-              <button onClick={() => setSearch('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600">
+              <button
+                onClick={() => setSearch('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 transition-colors"
+                style={{ color: 'var(--text-muted)' }}
+                onMouseEnter={e => { e.currentTarget.style.color = 'var(--text-primary)'; }}
+                onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; }}
+              >
                 <X className="w-3.5 h-3.5" />
               </button>
             )}
@@ -210,43 +219,43 @@ export function UsersPage() {
               <select
                 value={roleFilter}
                 onChange={(e) => setRoleFilter(e.target.value)}
-                className="appearance-none pl-3 pr-7 py-2.5 text-sm rounded-xl outline-none transition-all cursor-pointer"
-                  style={{
-                    background: 'var(--app-surface)',
-                    border: '1px solid var(--app-border)',
-                    color: 'var(--text-secondary)',
-                  }}
+                className="appearance-none pl-3 pr-7 py-2.5 text-[13px] rounded-xl outline-none transition-all cursor-pointer"
+                style={{
+                  background: 'var(--app-surface)',
+                  border: '1px solid var(--app-border)',
+                  color: 'var(--text-secondary)',
+                }}
               >
                 <option value="">All roles</option>
                 {ALL_ROLES.map((r) => (
                   <option key={r} value={r}>{ROLE_LABELS[r]}</option>
                 ))}
               </select>
-              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-neutral-400 pointer-events-none" />
+              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none" style={{ color: 'var(--text-muted)' }} />
             </div>
 
             <div className="relative">
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="appearance-none pl-3 pr-7 py-2.5 text-sm rounded-xl outline-none transition-all cursor-pointer"
-                  style={{
-                    background: 'var(--app-surface)',
-                    border: '1px solid var(--app-border)',
-                    color: 'var(--text-secondary)',
-                  }}
+                className="appearance-none pl-3 pr-7 py-2.5 text-[13px] rounded-xl outline-none transition-all cursor-pointer"
+                style={{
+                  background: 'var(--app-surface)',
+                  border: '1px solid var(--app-border)',
+                  color: 'var(--text-secondary)',
+                }}
               >
                 <option value="">All status</option>
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
               </select>
-              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-neutral-400 pointer-events-none" />
+              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none" style={{ color: 'var(--text-muted)' }} />
             </div>
           </div>
         </div>
 
         {loading ? (
-          <div className="divide-y divide-neutral-50">
+          <div className="divide-y" style={{ borderColor: 'var(--app-border)' }}>
             {Array.from({ length: 5 }).map((_, i) => <TableRowSkeleton key={i} cols={4} />)}
           </div>
         ) : users.length === 0 ? (
@@ -265,32 +274,49 @@ export function UsersPage() {
             }
           />
         ) : (
-          <div className="divide-y divide-neutral-50/80">
+          <div className="divide-y" style={{ borderColor: 'var(--app-border)' }}>
             {users.map((u) => (
-              <div key={u.id} className="flex items-center gap-4 px-5 py-3.5 hover:bg-neutral-50/50 transition-colors group">
+              <div
+                key={u.id}
+                className="flex items-center gap-4 px-5 py-3.5 transition-colors group"
+                style={{ background: 'transparent' }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'var(--app-bg-muted)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+              >
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   <div className="relative flex-shrink-0">
-                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center">
+                    <div
+                      className="w-9 h-9 rounded-full flex items-center justify-center"
+                      style={{ background: 'linear-gradient(135deg, #0A84FF 0%, #0055CC 100%)' }}
+                    >
                       <span className="text-white text-[12px] font-bold">
                         {u.full_name.charAt(0).toUpperCase()}
                       </span>
                     </div>
                     <span
-                      className={cn(
-                        'absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white',
-                        u.is_active ? 'bg-success' : 'bg-neutral-300',
-                      )}
+                      className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2"
+                      style={{
+                        background: u.is_active ? '#30D158' : 'var(--app-border-medium)',
+                        borderColor: 'var(--app-surface)',
+                      }}
                     />
                   </div>
 
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <p className="text-sm font-semibold text-neutral-900 truncate">{u.full_name}</p>
+                      <p className="text-[13px] font-semibold truncate" style={{ color: 'var(--text-primary)' }}>
+                        {u.full_name}
+                      </p>
                       {u.id === currentUser?.id && (
-                        <span className="text-[10px] font-semibold text-primary-500 bg-primary-50 px-1.5 py-0.5 rounded-full flex-shrink-0">You</span>
+                        <span
+                          className="text-[10px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0"
+                          style={{ background: 'var(--accent-subtle)', color: 'var(--accent)' }}
+                        >
+                          You
+                        </span>
                       )}
                     </div>
-                    <p className="text-xs text-neutral-400 truncate">{u.email}</p>
+                    <p className="text-[12px] truncate" style={{ color: 'var(--text-muted)' }}>{u.email}</p>
                   </div>
                 </div>
 
@@ -299,11 +325,19 @@ export function UsersPage() {
                 </div>
 
                 <div className="hidden md:flex items-center gap-1.5 flex-shrink-0">
-                  <span className={cn('w-1.5 h-1.5 rounded-full', u.is_active ? 'bg-success' : 'bg-neutral-300')} />
-                  <span className="text-xs text-neutral-500">{u.is_active ? 'Active' : 'Inactive'}</span>
+                  <span
+                    className="w-1.5 h-1.5 rounded-full"
+                    style={{ background: u.is_active ? '#30D158' : 'var(--app-border-medium)' }}
+                  />
+                  <span className="text-[12px]" style={{ color: 'var(--text-muted)' }}>
+                    {u.is_active ? 'Active' : 'Inactive'}
+                  </span>
                 </div>
 
-                <div className="hidden lg:block text-xs text-neutral-400 flex-shrink-0 w-24 text-right">
+                <div
+                  className="hidden lg:block text-[12px] flex-shrink-0 w-24 text-right"
+                  style={{ color: 'var(--text-muted)' }}
+                >
                   {u.last_login ? formatRelativeTime(u.last_login) : 'Never'}
                 </div>
 
@@ -311,7 +345,10 @@ export function UsersPage() {
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
                     <button
                       onClick={() => openEdit(u)}
-                      className="p-1.5 rounded-lg text-neutral-400 hover:text-primary-500 hover:bg-primary-50 transition-all"
+                      className="p-1.5 rounded-lg transition-all"
+                      style={{ color: 'var(--text-muted)' }}
+                      onMouseEnter={e => { e.currentTarget.style.color = 'var(--accent)'; e.currentTarget.style.background = 'var(--accent-subtle)'; }}
+                      onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.background = ''; }}
                       title="Edit user"
                     >
                       <Pencil className="w-3.5 h-3.5" />
@@ -319,13 +356,14 @@ export function UsersPage() {
                     {userIsSuperAdmin && u.id !== currentUser?.id && (
                       <button
                         onClick={() => setDeactivateTarget(u)}
-                        className={cn(
-                          'p-1.5 rounded-lg transition-all',
-                          u.is_active
-                            ? 'text-neutral-400 hover:text-danger-500 hover:bg-danger-50'
-                            : 'text-neutral-400 hover:text-success-600 hover:bg-success-50',
-                        )}
-                        title={u.is_active ? 'Deactivate user' : 'Deactivate user'}
+                        className="p-1.5 rounded-lg transition-all"
+                        style={{ color: 'var(--text-muted)' }}
+                        onMouseEnter={e => {
+                          e.currentTarget.style.color = u.is_active ? '#FF453A' : '#30D158';
+                          e.currentTarget.style.background = u.is_active ? 'rgba(255,69,58,0.1)' : 'rgba(48,209,88,0.1)';
+                        }}
+                        onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.background = ''; }}
+                        title={u.is_active ? 'Deactivate user' : 'Reactivate user'}
                       >
                         {u.is_active ? <UserX className="w-3.5 h-3.5" /> : <UserCheck className="w-3.5 h-3.5" />}
                       </button>
@@ -338,7 +376,10 @@ export function UsersPage() {
         )}
 
         {users.length > 0 && (
-          <div className="px-5 py-3 border-t border-neutral-50 text-xs text-neutral-400">
+          <div
+            className="px-5 py-3 border-t text-[12px]"
+            style={{ borderColor: 'var(--app-border)', color: 'var(--text-muted)' }}
+          >
             Showing {users.length} user{users.length !== 1 ? 's' : ''}
           </div>
         )}
@@ -385,9 +426,12 @@ export function UsersPage() {
             onChange={(e) => setCreateForm({ ...createForm, role: e.target.value as UserRole })}
             options={availableRoles.map((r) => ({ value: r, label: ROLE_LABELS[r] }))}
           />
-          <div className="px-4 py-3 bg-neutral-50 rounded-xl border border-neutral-100">
-            <p className="text-xs text-neutral-500 leading-relaxed">
-              <span className="font-semibold text-neutral-700">{ROLE_LABELS[createForm.role]}</span>{' '}
+          <div
+            className="px-4 py-3 rounded-xl border"
+            style={{ background: 'var(--app-bg-muted)', borderColor: 'var(--app-border)' }}
+          >
+            <p className="text-[12px] leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+              <span className="font-semibold" style={{ color: 'var(--text-secondary)' }}>{ROLE_LABELS[createForm.role]}</span>{' '}
               — {getRoleDescription(createForm.role)}
             </p>
           </div>
@@ -406,13 +450,19 @@ export function UsersPage() {
         }
       >
         <form id="edit-user-form" onSubmit={handleEdit} className="space-y-4">
-          <div className="flex items-center gap-3 p-4 bg-neutral-50 rounded-2xl border border-neutral-100">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center flex-shrink-0">
+          <div
+            className="flex items-center gap-3 p-4 rounded-2xl border"
+            style={{ background: 'var(--app-bg-muted)', borderColor: 'var(--app-border)' }}
+          >
+            <div
+              className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+              style={{ background: 'linear-gradient(135deg, #0A84FF 0%, #0055CC 100%)' }}
+            >
               <span className="text-white text-sm font-bold">{editTarget?.full_name?.charAt(0)}</span>
             </div>
             <div>
-              <p className="text-sm font-semibold text-neutral-900">{editTarget?.full_name}</p>
-              <p className="text-xs text-neutral-400">{editTarget?.email}</p>
+              <p className="text-[13px] font-semibold" style={{ color: 'var(--text-primary)' }}>{editTarget?.full_name}</p>
+              <p className="text-[12px]" style={{ color: 'var(--text-muted)' }}>{editTarget?.email}</p>
             </div>
           </div>
 
@@ -439,20 +489,19 @@ export function UsersPage() {
               <button
                 type="button"
                 onClick={() => setEditForm({ ...editForm, is_active: !editForm.is_active })}
-                className={cn(
-                  'relative flex-shrink-0 rounded-full transition-colors duration-200',
-                  editForm.is_active ? 'bg-success' : 'bg-neutral-200',
-                )}
-                style={{ width: '36px', height: '20px' }}
+                className="relative flex-shrink-0 rounded-full transition-colors duration-200"
+                style={{
+                  width: '36px',
+                  height: '20px',
+                  background: editForm.is_active ? '#30D158' : 'var(--app-border-medium)',
+                }}
               >
                 <span
-                  className={cn(
-                    'absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-200',
-                    editForm.is_active ? 'translate-x-4' : 'translate-x-0.5',
-                  )}
+                  className="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-200"
+                  style={{ transform: editForm.is_active ? 'translateX(16px)' : 'translateX(2px)' }}
                 />
               </button>
-              <span className="text-sm text-neutral-700">Account active</span>
+              <span className="text-[13px]" style={{ color: 'var(--text-secondary)' }}>Account active</span>
             </div>
           )}
         </form>

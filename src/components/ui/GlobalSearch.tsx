@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, X, FolderOpen, Plug, Shield, ChartBar as BarChart2, Activity, MessageSquare, Users, ChevronRight, Command, ArrowUp, ArrowDown, CornerDownLeft } from 'lucide-react';
+import { Search, X, FolderOpen, Plug, Shield, ChartBar as BarChart2, Activity, MessageSquare, Users, ChevronRight, Command, ArrowUp, ArrowDown, CornerDownLeft, Building2, Library, FileText } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { projectApi, connectorApi, healthRulesApi } from '@/lib/api';
+import { globalSearchApi } from '@/lib/api';
 import { cn } from '@/lib/utils';
 
 interface SearchResult {
   id: string;
-  type: 'project' | 'connector' | 'rule' | 'page';
+  type: 'project' | 'connector' | 'rule' | 'page' | 'lob';
   title: string;
   subtitle?: string;
   href: string;
@@ -17,20 +17,40 @@ interface SearchResult {
 
 const STATIC_PAGES: SearchResult[] = [
   { id: 'dashboard', type: 'page', title: 'Dashboard', subtitle: 'System overview', href: '/dashboard', icon: Activity, color: '#00E599' },
+  { id: 'lobs', type: 'page', title: 'Lines of Business', subtitle: 'Manage LOBs', href: '/lobs', icon: Building2, color: '#0A84FF' },
   { id: 'projects', type: 'page', title: 'Projects', subtitle: 'Manage projects', href: '/projects', icon: FolderOpen, color: '#0A84FF' },
   { id: 'connectors', type: 'page', title: 'Connectors', subtitle: 'Service connectors', href: '/connectors', icon: Plug, color: '#FF9F0A' },
+  { id: 'catalog', type: 'page', title: 'Connector Catalog', subtitle: 'Catalog management', href: '/connector-catalog', icon: Library, color: '#FF9F0A' },
   { id: 'health', type: 'page', title: 'Health Monitor', subtitle: 'Real-time health', href: '/health', icon: Activity, color: '#30D158' },
   { id: 'rules', type: 'page', title: 'Health Rules', subtitle: 'Rules engine', href: '/rules', icon: Shield, color: '#FF453A' },
-  { id: 'analytics', type: 'page', title: 'Analytics', subtitle: 'Historical trends & SLA', href: '/analytics', icon: BarChart2, color: '#BF5AF2' },
+  { id: 'analytics', type: 'page', title: 'Analytics', subtitle: 'Historical trends and SLA', href: '/analytics', icon: BarChart2, color: '#3B82F6' },
   { id: 'chatbot', type: 'page', title: 'AI Assistant', subtitle: 'Intelligence layer', href: '/chatbot', icon: MessageSquare, color: '#0A84FF' },
+  { id: 'audit', type: 'page', title: 'Audit Logs', subtitle: 'System event trail', href: '/audit', icon: FileText, color: '#667085' },
   { id: 'users', type: 'page', title: 'Users', subtitle: 'User management', href: '/users', icon: Users, color: '#FF9F0A' },
 ];
 
+const TYPE_ICONS: Record<string, React.ElementType> = {
+  page: Activity,
+  project: FolderOpen,
+  connector: Plug,
+  rule: Shield,
+  lob: Building2,
+};
+
+const TYPE_COLORS: Record<string, string> = {
+  page: '#667085',
+  project: '#0A84FF',
+  connector: '#FF9F0A',
+  rule: '#FF453A',
+  lob: '#00E599',
+};
+
 const TYPE_LABELS: Record<string, string> = {
-  page: 'Page',
-  project: 'Project',
-  connector: 'Connector',
-  rule: 'Rule',
+  page: 'Pages',
+  project: 'Projects',
+  connector: 'Connectors',
+  rule: 'Rules',
+  lob: 'Lines of Business',
 };
 
 interface GlobalSearchProps {
@@ -70,44 +90,26 @@ export function GlobalSearch({ open, onClose }: GlobalSearchProps) {
         p => p.title.toLowerCase().includes(lower) || (p.subtitle || '').toLowerCase().includes(lower)
       );
 
-      const [projRes, ruleRes] = await Promise.allSettled([
-        projectApi.list(),
-        healthRulesApi.list({ search: q, page_size: 5 }),
-      ]);
+      let apiResults: SearchResult[] = [];
+      try {
+        const res = await globalSearchApi.search(q);
+        const data = (res.data?.results || []) as Array<{
+          type: string; id: string; title: string; subtitle?: string; href: string; color?: string;
+        }>;
+        apiResults = data.map(item => ({
+          id: item.id,
+          type: item.type as SearchResult['type'],
+          title: item.title,
+          subtitle: item.subtitle,
+          href: item.href,
+          icon: TYPE_ICONS[item.type] || Activity,
+          color: item.color || TYPE_COLORS[item.type],
+        }));
+      } catch {
+        // fallback to static only
+      }
 
-      const projectResults: SearchResult[] = projRes.status === 'fulfilled'
-        ? (projRes.value.data as Array<{ id: string; name: string; status?: string }>)
-            .filter(p => p.name.toLowerCase().includes(lower))
-            .slice(0, 5)
-            .map(p => ({
-              id: p.id,
-              type: 'project' as const,
-              title: p.name,
-              subtitle: p.status ? `Status: ${p.status}` : 'Project',
-              href: `/projects/${p.id}`,
-              icon: FolderOpen,
-              color: '#0A84FF',
-            }))
-        : [];
-
-      const ruleResults: SearchResult[] = ruleRes.status === 'fulfilled'
-        ? (ruleRes.value.data?.items || []).slice(0, 4).map((r: { id: string; name: string; scope?: string; severity?: string }) => ({
-            id: r.id,
-            type: 'rule' as const,
-            title: r.name,
-            subtitle: `${r.scope || ''} · ${r.severity || ''}`,
-            href: `/rules`,
-            icon: Shield,
-            color: '#FF453A',
-          }))
-        : [];
-
-      const combined = [
-        ...staticMatches,
-        ...projectResults,
-        ...ruleResults,
-      ].slice(0, 12);
-
+      const combined = [...staticMatches, ...apiResults].slice(0, 14);
       setResults(combined);
       setActiveIdx(0);
     } catch {
@@ -119,7 +121,7 @@ export function GlobalSearch({ open, onClose }: GlobalSearchProps) {
 
   useEffect(() => {
     if (searchTimeout.current) clearTimeout(searchTimeout.current);
-    searchTimeout.current = setTimeout(() => runSearch(query), 220);
+    searchTimeout.current = setTimeout(() => runSearch(query), 250);
     return () => { if (searchTimeout.current) clearTimeout(searchTimeout.current); };
   }, [query, runSearch]);
 
@@ -173,7 +175,7 @@ export function GlobalSearch({ open, onClose }: GlobalSearchProps) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: -8 }}
             transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
-            className="fixed top-[12vh] left-1/2 z-[201] w-full max-w-xl -translate-x-1/2"
+            className="fixed top-[12vh] left-1/2 z-[201] w-full max-w-xl -translate-x-1/2 px-4"
             style={{ filter: 'drop-shadow(0 32px 80px rgba(0,0,0,0.9))' }}
           >
             <div
@@ -188,13 +190,13 @@ export function GlobalSearch({ open, onClose }: GlobalSearchProps) {
                 className="flex items-center gap-3 px-4 h-14 border-b"
                 style={{ borderColor: 'var(--app-border)' }}
               >
-                <Search className="w-4.5 h-4.5 flex-shrink-0" style={{ color: query ? 'var(--accent)' : 'var(--text-muted)' }} />
+                <Search className="w-[18px] h-[18px] flex-shrink-0" style={{ color: query ? 'var(--accent)' : 'var(--text-muted)' }} />
                 <input
                   ref={inputRef}
                   value={query}
                   onChange={e => setQuery(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="Search projects, connectors, rules, pages…"
+                  placeholder="Search projects, connectors, rules, pages..."
                   className="flex-1 bg-transparent outline-none text-[14px] font-medium placeholder-shown:font-normal"
                   style={{ color: 'var(--text-primary)' }}
                   aria-label="Global search"
@@ -206,8 +208,14 @@ export function GlobalSearch({ open, onClose }: GlobalSearchProps) {
                     onClick={() => setQuery('')}
                     className="p-1 rounded-lg transition-all"
                     style={{ color: 'var(--text-muted)' }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'var(--text-primary)'; (e.currentTarget as HTMLElement).style.background = 'var(--app-bg-muted)'; }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'var(--text-muted)'; (e.currentTarget as HTMLElement).style.background = ''; }}
+                    onMouseEnter={e => {
+                      (e.currentTarget as HTMLElement).style.color = 'var(--text-primary)';
+                      (e.currentTarget as HTMLElement).style.background = 'var(--app-bg-muted)';
+                    }}
+                    onMouseLeave={e => {
+                      (e.currentTarget as HTMLElement).style.color = 'var(--text-muted)';
+                      (e.currentTarget as HTMLElement).style.background = '';
+                    }}
                     aria-label="Clear search"
                   >
                     <X className="w-3.5 h-3.5" />
@@ -235,7 +243,9 @@ export function GlobalSearch({ open, onClose }: GlobalSearchProps) {
               >
                 {results.length === 0 && !loading && (
                   <div className="px-4 py-10 text-center">
-                    <p className="text-sm" style={{ color: 'var(--text-muted)' }}>No results for "{query}"</p>
+                    <Search className="w-8 h-8 mx-auto mb-3 opacity-20" style={{ color: 'var(--text-muted)' }} />
+                    <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>No results for "{query}"</p>
+                    <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Try a different search term</p>
                   </div>
                 )}
                 {(Object.entries(grouped) as [string, SearchResult[]][]).map(([type, items]) => (
@@ -250,9 +260,11 @@ export function GlobalSearch({ open, onClose }: GlobalSearchProps) {
                       const globalIdx = results.indexOf(result);
                       const isActive = globalIdx === activeIdx;
                       const Icon = result.icon;
+                      const iconColor = result.color || 'var(--text-muted)';
+                      const iconBg = (result.color || '#667085') + '18';
                       return (
                         <button
-                          key={result.id}
+                          key={result.id + result.type}
                           data-active={isActive}
                           role="option"
                           aria-selected={isActive}
@@ -267,9 +279,9 @@ export function GlobalSearch({ open, onClose }: GlobalSearchProps) {
                         >
                           <div
                             className="w-7 h-7 rounded-xl flex items-center justify-center flex-shrink-0"
-                            style={{ background: `${result.color || '#667085'}18` }}
+                            style={{ background: iconBg }}
                           >
-                            <Icon className="w-3.5 h-3.5" style={{ color: result.color || 'var(--text-muted)' }} />
+                            <Icon className="w-3.5 h-3.5" style={{ color: iconColor }} />
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-[13px] font-medium truncate" style={{ color: 'var(--text-primary)' }}>

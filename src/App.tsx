@@ -18,7 +18,6 @@ import { RulesPage } from '@/pages/RulesPage';
 import { AnalyticsPage } from '@/pages/AnalyticsPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import { AuditLogPage } from '@/pages/AuditLogPage';
-import { NotificationContainer } from '@/components/ui/Notification';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { useAuthStore } from '@/store/authStore';
 import { isAdmin } from '@/lib/permissions';
@@ -84,7 +83,6 @@ export default function App() {
           </Route>
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
-        <NotificationContainer />
       </BrowserRouter>
     </ErrorBoundary>
   );
