@@ -17,6 +17,7 @@ import { SettingsPage } from '@/pages/SettingsPage';
 import { RulesPage } from '@/pages/RulesPage';
 import { AnalyticsPage } from '@/pages/AnalyticsPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
+import { AuditLogPage } from '@/pages/AuditLogPage';
 import { NotificationContainer } from '@/components/ui/Notification';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { useAuthStore } from '@/store/authStore';
@@ -65,6 +66,14 @@ export default function App() {
               element={
                 <RequireAdmin>
                   <ErrorBoundary><UsersPage /></ErrorBoundary>
+                </RequireAdmin>
+              }
+            />
+            <Route
+              path="audit"
+              element={
+                <RequireAdmin>
+                  <ErrorBoundary><AuditLogPage /></ErrorBoundary>
                 </RequireAdmin>
               }
             />

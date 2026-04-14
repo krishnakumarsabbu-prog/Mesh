@@ -1,5 +1,23 @@
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { useAuthStore } from '@/store/authStore';
+import { useNotificationStore } from '@/store/notificationStore';
+
+const SILENT_PATTERNS = ['/auth/refresh', '/auth/login', '/auth/register'];
+const SILENT_METHODS = ['get'];
+
+function shouldShowErrorToast(url: string | undefined, method: string | undefined, status: number): boolean {
+  if (!url) return false;
+  if (SILENT_PATTERNS.some(p => url.includes(p))) return false;
+  if (method && SILENT_METHODS.includes(method.toLowerCase()) && status >= 400 && status < 500) return false;
+  return status >= 400;
+}
+
+function extractErrorMessage(error: AxiosError): string {
+  const data = error.response?.data as { detail?: string | object } | undefined;
+  if (typeof data?.detail === 'string') return data.detail;
+  if (typeof data?.detail === 'object') return JSON.stringify(data.detail);
+  return error.message || 'An unexpected error occurred';
+}
 
 const BASE_URL = '/api/v1';
 
@@ -20,7 +38,8 @@ apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
 apiClient.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
-    if (error.response?.status === 401) {
+    const status = error.response?.status;
+    if (status === 401) {
       const refreshToken = useAuthStore.getState().refresh_token;
       if (refreshToken) {
         try {
@@ -36,6 +55,15 @@ apiClient.interceptors.response.use(
       } else {
         useAuthStore.getState().logout();
       }
+    }
+    if (status && shouldShowErrorToast(error.config?.url, error.config?.method, status)) {
+      const message = extractErrorMessage(error);
+      const statusLabel = status >= 500 ? 'Server Error' : status === 403 ? 'Access Denied' : 'Request Failed';
+      useNotificationStore.getState().add({
+        type: status >= 500 ? 'error' : 'warning',
+        title: statusLabel,
+        message,
+      });
     }
     return Promise.reject(error);
   }
@@ -217,6 +245,21 @@ export const analyticsApi = {
 
   overview: (params?: { lob_id?: string; time_range?: string }) =>
     apiClient.get('/analytics/overview', { params }),
+};
+
+export const auditApi = {
+  getLogs: (params?: {
+    resource_type?: string;
+    user_id?: string;
+    action?: string;
+    search?: string;
+    limit?: number;
+    offset?: number;
+  }) => apiClient.get('/audit/logs', { params }),
+};
+
+export const globalSearchApi = {
+  search: (q: string) => apiClient.get('/search', { params: { q } }),
 };
 
 export const healthRulesApi = {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { CircleCheck as CheckCircle, CircleAlert as AlertCircle, TriangleAlert as AlertTriangle, Info, X } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNotificationStore } from '@/store/notificationStore';
 import { Notification } from '@/types';
 
@@ -16,28 +16,28 @@ const styles = {
     bg: 'rgba(48,209,88,0.08)',
     border: 'rgba(48,209,88,0.2)',
     iconColor: '#30D158',
-    titleColor: '#166534',
+    titleColor: '#4ade80',
     barColor: '#30D158',
   },
   error: {
     bg: 'rgba(255,69,58,0.08)',
     border: 'rgba(255,69,58,0.2)',
     iconColor: '#FF453A',
-    titleColor: '#991b1b',
+    titleColor: '#f87171',
     barColor: '#FF453A',
   },
   warning: {
     bg: 'rgba(255,159,10,0.08)',
     border: 'rgba(255,159,10,0.2)',
     iconColor: '#FF9F0A',
-    titleColor: '#92400e',
+    titleColor: '#fbbf24',
     barColor: '#FF9F0A',
   },
   info: {
     bg: 'rgba(10,132,255,0.08)',
     border: 'rgba(10,132,255,0.2)',
     iconColor: '#0A84FF',
-    titleColor: '#1e40af',
+    titleColor: '#60a5fa',
     barColor: '#0A84FF',
   },
 };
@@ -48,12 +48,20 @@ function NotificationItem({ notification }: { notification: Notification }) {
   const s = styles[notification.type];
 
   return (
-    <div
-      className="relative flex items-start gap-3 px-4 py-3.5 rounded-2xl animate-notification-in overflow-hidden"
+    <motion.div
+      layout
+      initial={{ opacity: 0, x: 24, scale: 0.96 }}
+      animate={{ opacity: 1, x: 0, scale: 1 }}
+      exit={{ opacity: 0, x: 24, scale: 0.95, transition: { duration: 0.18, ease: 'easeIn' } }}
+      transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+      role="alert"
+      aria-live="polite"
+      aria-atomic="true"
+      className="relative flex items-start gap-3 px-4 py-3.5 rounded-2xl overflow-hidden"
       style={{
         background: s.bg,
         border: `1px solid ${s.border}`,
-        boxShadow: '0 8px 32px -6px rgba(0,0,0,0.15), 0 2px 8px -2px rgba(0,0,0,0.08)',
+        boxShadow: '0 8px 32px -6px rgba(0,0,0,0.35), 0 2px 8px -2px rgba(0,0,0,0.2)',
         backdropFilter: 'blur(12px)',
         minWidth: '300px',
         maxWidth: '380px',
@@ -81,10 +89,11 @@ function NotificationItem({ notification }: { notification: Notification }) {
       </div>
       <button
         onClick={() => remove(notification.id)}
-        className="flex-shrink-0 p-1 rounded-lg transition-all duration-150 mt-0.5"
+        className="flex-shrink-0 p-1 rounded-lg transition-all duration-150 mt-0.5 focus-ring"
         style={{ color: 'var(--text-muted)' }}
+        aria-label="Dismiss notification"
         onMouseEnter={(e) => {
-          (e.currentTarget as HTMLElement).style.background = 'rgba(0,0,0,0.06)';
+          (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.08)';
           (e.currentTarget as HTMLElement).style.color = 'var(--text-primary)';
         }}
         onMouseLeave={(e) => {
@@ -94,20 +103,27 @@ function NotificationItem({ notification }: { notification: Notification }) {
       >
         <X className="w-3.5 h-3.5" />
       </button>
-    </div>
+    </motion.div>
   );
 }
 
 export function NotificationContainer() {
   const { notifications } = useNotificationStore();
+  const capped = notifications.slice(-5);
 
   return (
-    <div className="fixed bottom-6 right-6 z-[100] flex flex-col gap-2.5 pointer-events-none">
-      {notifications.map((n) => (
-        <div key={n.id} className="pointer-events-auto">
-          <NotificationItem notification={n} />
-        </div>
-      ))}
+    <div
+      className="fixed bottom-6 right-6 z-[100] flex flex-col gap-2.5 pointer-events-none"
+      aria-label="Notifications"
+      aria-live="polite"
+    >
+      <AnimatePresence mode="sync" initial={false}>
+        {capped.map((n) => (
+          <div key={n.id} className="pointer-events-auto">
+            <NotificationItem notification={n} />
+          </div>
+        ))}
+      </AnimatePresence>
     </div>
   );
 }

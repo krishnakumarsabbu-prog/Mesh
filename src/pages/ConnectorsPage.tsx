@@ -100,13 +100,13 @@ export function ConnectorsPage() {
       header: 'Connector',
       render: (val: unknown, row: Connector) => (
         <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-lg bg-primary-50 flex items-center justify-center flex-shrink-0">
-            <Plug className="w-3.5 h-3.5 text-primary-500" />
+          <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'var(--accent-subtle)' }}>
+            <Plug className="w-3.5 h-3.5" style={{ color: 'var(--accent)' }} />
           </div>
           <div>
-            <p className="text-sm font-medium text-neutral-900">{row.name}</p>
+            <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{row.name}</p>
             {row.endpoint_url && (
-              <p className="text-xs text-neutral-400 truncate max-w-xs">{row.endpoint_url}</p>
+              <p className="text-xs truncate max-w-xs" style={{ color: 'var(--text-muted)' }}>{row.endpoint_url}</p>
             )}
           </div>
         </div>
@@ -116,7 +116,7 @@ export function ConnectorsPage() {
       key: 'type',
       header: 'Type',
       render: (val: unknown) => (
-        <span className="text-xs font-mono bg-neutral-100 px-2 py-0.5 rounded-lg text-neutral-600">
+        <span className="text-xs font-mono px-2 py-0.5 rounded-lg" style={{ background: 'var(--app-bg-muted)', color: 'var(--text-secondary)' }}>
           {String(val).replace('_', ' ')}
         </span>
       ),
@@ -130,14 +130,14 @@ export function ConnectorsPage() {
       key: 'avg_response_time_ms',
       header: 'Response Time',
       render: (val: unknown) => (
-        <span className="text-sm font-mono">{formatMs(val as number | undefined)}</span>
+        <span className="text-sm font-mono" style={{ color: 'var(--text-secondary)' }}>{formatMs(val as number | undefined)}</span>
       ),
     },
     {
       key: 'last_checked',
       header: 'Last Check',
       render: (val: unknown) => (
-        <span className="text-sm text-neutral-400">
+        <span className="text-sm" style={{ color: 'var(--text-muted)' }}>
           {val ? formatRelativeTime(String(val)) : 'Never'}
         </span>
       ),
@@ -149,7 +149,10 @@ export function ConnectorsPage() {
         <div className="flex items-center gap-1 justify-end">
           <button
             onClick={(e) => { e.stopPropagation(); handleHealthCheck(row.id); }}
-            className="p-1.5 rounded-lg text-neutral-400 hover:text-primary-500 hover:bg-primary-50 transition-all"
+            className="p-1.5 rounded-lg transition-all"
+            style={{ color: 'var(--text-muted)' }}
+            onMouseEnter={e => { e.currentTarget.style.color = 'var(--accent)'; e.currentTarget.style.background = 'var(--accent-subtle)'; }}
+            onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.background = ''; }}
             disabled={checking === row.id}
           >
             {checking === row.id ? (
@@ -160,7 +163,10 @@ export function ConnectorsPage() {
           </button>
           <button
             onClick={(e) => { e.stopPropagation(); setDeleteTarget(row); }}
-            className="p-1.5 rounded-lg text-neutral-400 hover:text-danger-500 hover:bg-danger-50 transition-all"
+            className="p-1.5 rounded-lg transition-all"
+            style={{ color: 'var(--text-muted)' }}
+            onMouseEnter={e => { e.currentTarget.style.color = '#FF453A'; e.currentTarget.style.background = 'rgba(255,69,58,0.1)'; }}
+            onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.background = ''; }}
           >
             <Trash2 className="w-3.5 h-3.5" />
           </button>
@@ -173,8 +179,8 @@ export function ConnectorsPage() {
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold text-neutral-900 tracking-tight">Connectors</h2>
-          <p className="text-sm text-neutral-500 mt-0.5">{connectors.length} connectors monitored</p>
+          <h2 className="text-xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>Connectors</h2>
+          <p className="text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>{connectors.length} connectors monitored</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="secondary" icon={<RefreshCw className="w-4 h-4" />} onClick={fetchData}>Refresh</Button>
@@ -183,22 +189,22 @@ export function ConnectorsPage() {
       </div>
 
       <Card padding="none">
-        <div className="px-6 py-4 border-b border-neutral-50">
+        <div className="px-6 py-4 border-b" style={{ borderColor: 'var(--app-border)' }}>
           <CardHeader
             title="All Connectors"
             subtitle="Service health endpoints"
             action={
-              <div className="flex gap-3 text-xs text-neutral-500">
+              <div className="flex gap-3 text-xs" style={{ color: 'var(--text-muted)' }}>
                 <span className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-success" />
+                  <span className="w-2 h-2 rounded-full" style={{ background: '#30D158' }} />
                   {connectors.filter((c) => c.status === 'healthy').length} healthy
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-warning" />
+                  <span className="w-2 h-2 rounded-full" style={{ background: '#FF9F0A' }} />
                   {connectors.filter((c) => c.status === 'degraded').length} degraded
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-danger" />
+                  <span className="w-2 h-2 rounded-full" style={{ background: '#FF453A' }} />
                   {connectors.filter((c) => c.status === 'down').length} down
                 </span>
               </div>

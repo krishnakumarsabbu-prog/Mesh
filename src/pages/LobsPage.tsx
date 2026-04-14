@@ -269,7 +269,7 @@ export function LobsPage() {
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
-          <div className="flex items-center gap-1 text-xs text-neutral-500">
+          <div className="flex items-center gap-1 text-xs" style={{ color: 'var(--text-muted)' }}>
             <SlidersHorizontal className="w-3.5 h-3.5" />
             <span>Sort:</span>
           </div>
@@ -277,41 +277,31 @@ export function LobsPage() {
             <button
               key={key}
               onClick={() => toggleSort(key)}
-              className={cn(
-                'flex items-center gap-1 px-2.5 py-1.5 text-xs rounded-lg border transition-all font-medium',
-                sortKey === key
-                  ? 'bg-primary-50 border-primary-200 text-primary-700'
-                  : 'border-neutral-200 text-neutral-500 hover:border-neutral-300 hover:text-neutral-700'
-              )}
-              style={sortKey === key ? undefined : { background: 'var(--app-surface)' }}
+              className="flex items-center gap-1 px-2.5 py-1.5 text-xs rounded-lg border transition-all font-medium"
+              style={sortKey === key
+                ? { background: 'var(--accent-subtle)', borderColor: 'var(--accent)', color: 'var(--accent)' }
+                : { background: 'var(--app-surface)', borderColor: 'var(--app-border)', color: 'var(--text-secondary)' }
+              }
             >
               {key === 'name' ? 'Name' : key === 'project_count' ? 'Projects' : 'Members'}
               {sortKey === key && <ArrowUpDown className="w-3 h-3" />}
             </button>
           ))}
 
-          <div className="w-px h-5 bg-neutral-200" />
+          <div className="w-px h-5" style={{ background: 'var(--app-border)' }} />
 
           <div className="flex rounded-xl border overflow-hidden" style={{ borderColor: 'var(--app-border)', background: 'var(--app-surface)' }}>
             <button
               onClick={() => setViewMode('grid')}
-              className={cn(
-                'p-1.5 transition-all',
-                viewMode === 'grid'
-                  ? 'bg-primary-50 text-primary-600'
-                  : 'text-neutral-400 hover:text-neutral-600'
-              )}
+              className="p-1.5 transition-all"
+              style={viewMode === 'grid' ? { background: 'var(--accent)', color: '#fff' } : { color: 'var(--text-muted)' }}
             >
               <LayoutGrid className="w-4 h-4" />
             </button>
             <button
               onClick={() => setViewMode('table')}
-              className={cn(
-                'p-1.5 transition-all',
-                viewMode === 'table'
-                  ? 'bg-primary-50 text-primary-600'
-                  : 'text-neutral-400 hover:text-neutral-600'
-              )}
+              className="p-1.5 transition-all"
+              style={viewMode === 'table' ? { background: 'var(--accent)', color: '#fff' } : { color: 'var(--text-muted)' }}
             >
               <List className="w-4 h-4" />
             </button>
@@ -440,24 +430,24 @@ export function LobsPage() {
         {adminLoading ? (
           <div className="space-y-3">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="h-14 bg-neutral-100 rounded-xl animate-pulse" />
+              <div key={i} className="h-14 rounded-xl shimmer-bg" />
             ))}
           </div>
         ) : (
           <div className="space-y-5">
             {admins.length > 0 && (
               <div>
-                <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2">Current Admins</p>
+                <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>Current Admins</p>
                 <div className="space-y-2">
                   {admins.map((admin) => (
-                    <div key={admin.id} className="flex items-center justify-between p-3 bg-amber-50 border border-amber-100 rounded-xl">
+                    <div key={admin.id} className="flex items-center justify-between p-3 rounded-xl" style={{ background: 'rgba(255,159,10,0.08)', border: '1px solid rgba(255,159,10,0.2)' }}>
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-amber-200 flex items-center justify-center text-amber-700 text-xs font-semibold">
+                        <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold" style={{ background: 'rgba(255,159,10,0.2)', color: '#FF9F0A' }}>
                           {(admin.user_full_name || admin.user_email || '?')[0].toUpperCase()}
                         </div>
                         <div>
-                          <p className="text-sm font-medium text-neutral-900">{admin.user_full_name}</p>
-                          <p className="text-xs text-neutral-500">{admin.user_email}</p>
+                          <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{admin.user_full_name}</p>
+                          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{admin.user_email}</p>
                         </div>
                         <Badge variant="warning" size="xs">Admin</Badge>
                       </div>
@@ -480,47 +470,50 @@ export function LobsPage() {
             )}
 
             {admins.length === 0 && (
-              <p className="text-sm text-neutral-400 text-center py-2">No admins assigned yet.</p>
+              <p className="text-sm text-center py-2" style={{ color: 'var(--text-muted)' }}>No admins assigned yet.</p>
             )}
 
             {superAdmin && (
               <div>
-                <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2">Assign New Admin</p>
+                <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>Assign New Admin</p>
                 <div className="relative mb-3">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-neutral-400" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none" style={{ color: 'var(--text-muted)' }} />
                   <input
                     type="text"
                     placeholder="Search users..."
                     value={userSearch}
                     onChange={(e) => setUserSearch(e.target.value)}
-                    className="w-full pl-8 pr-3 py-2 text-sm border border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400"
+                    className="w-full pl-8 pr-3 py-2 text-sm rounded-xl outline-none focus-ring"
+                    style={{ background: 'var(--app-bg-muted)', border: '1px solid var(--app-border)', color: 'var(--text-primary)' }}
                   />
                 </div>
                 <div className="max-h-52 overflow-y-auto space-y-1.5 pr-1">
                   {filteredUsers.length === 0 ? (
-                    <p className="text-sm text-neutral-400 text-center py-4">No users found</p>
+                    <p className="text-sm text-center py-4" style={{ color: 'var(--text-muted)' }}>No users found</p>
                   ) : (
                     filteredUsers.map((u) => {
                       const isAdminMember = adminUserIds.has(u.id);
                       return (
                         <div
                           key={u.id}
-                          className={cn(
-                            'flex items-center justify-between p-2.5 rounded-xl border transition-all',
-                            isAdminMember ? 'bg-neutral-50 border-neutral-100 opacity-60' : 'bg-white border-neutral-100 hover:border-neutral-200'
-                          )}
+                          className="flex items-center justify-between p-2.5 rounded-xl border transition-all"
+                          style={{
+                            background: isAdminMember ? 'var(--app-bg-subtle)' : 'var(--app-surface)',
+                            borderColor: 'var(--app-border)',
+                            opacity: isAdminMember ? 0.6 : 1,
+                          }}
                         >
                           <div className="flex items-center gap-2.5">
-                            <div className="w-7 h-7 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 text-xs font-semibold">
+                            <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold" style={{ background: 'var(--accent-subtle)', color: 'var(--accent)' }}>
                               {u.full_name[0].toUpperCase()}
                             </div>
                             <div>
-                              <p className="text-sm font-medium text-neutral-900">{u.full_name}</p>
-                              <p className="text-xs text-neutral-400">{u.email}</p>
+                              <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{u.full_name}</p>
+                              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{u.email}</p>
                             </div>
                           </div>
                           {isAdminMember ? (
-                            <span className="flex items-center gap-1 text-xs text-success font-medium">
+                            <span className="flex items-center gap-1 text-xs font-medium" style={{ color: '#30D158' }}>
                               <Check className="w-3.5 h-3.5" /> Admin
                             </span>
                           ) : (
@@ -598,8 +591,8 @@ function LobCard({ lob, superAdmin, onNavigate, onEdit, onDelete, onManageAdmins
               <Building2 className="w-5 h-5" style={{ color: lob.color }} />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="text-base font-semibold text-neutral-900 truncate leading-tight">{lob.name}</h3>
-              <p className="text-xs text-neutral-400 font-mono mt-0.5">{lob.slug}</p>
+              <h3 className="text-base font-semibold truncate leading-tight" style={{ color: 'var(--text-primary)' }}>{lob.name}</h3>
+              <p className="text-xs font-mono mt-0.5" style={{ color: 'var(--text-muted)' }}>{lob.slug}</p>
             </div>
           </div>
 
@@ -607,21 +600,30 @@ function LobCard({ lob, superAdmin, onNavigate, onEdit, onDelete, onManageAdmins
             <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity ml-2 flex-shrink-0">
               <button
                 onClick={onEdit}
-                className="p-1.5 rounded-lg text-neutral-400 hover:text-primary-500 hover:bg-primary-50 transition-all"
+                className="p-1.5 rounded-lg transition-all"
+                style={{ color: 'var(--text-muted)' }}
+                onMouseEnter={e => { e.currentTarget.style.color = 'var(--accent)'; e.currentTarget.style.background = 'var(--accent-subtle)'; }}
+                onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.background = ''; }}
                 title="Edit"
               >
                 <Pencil className="w-3.5 h-3.5" />
               </button>
               <button
                 onClick={onManageAdmins}
-                className="p-1.5 rounded-lg text-neutral-400 hover:text-amber-500 hover:bg-amber-50 transition-all"
+                className="p-1.5 rounded-lg transition-all"
+                style={{ color: 'var(--text-muted)' }}
+                onMouseEnter={e => { e.currentTarget.style.color = '#FF9F0A'; e.currentTarget.style.background = 'rgba(255,159,10,0.1)'; }}
+                onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.background = ''; }}
                 title="Manage Admins"
               >
                 <ShieldCheck className="w-3.5 h-3.5" />
               </button>
               <button
                 onClick={onDelete}
-                className="p-1.5 rounded-lg text-neutral-400 hover:text-danger-500 hover:bg-danger-50 transition-all"
+                className="p-1.5 rounded-lg transition-all"
+                style={{ color: 'var(--text-muted)' }}
+                onMouseEnter={e => { e.currentTarget.style.color = '#FF453A'; e.currentTarget.style.background = 'rgba(255,69,58,0.1)'; }}
+                onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.background = ''; }}
                 title="Delete"
               >
                 <Trash2 className="w-3.5 h-3.5" />
@@ -631,23 +633,23 @@ function LobCard({ lob, superAdmin, onNavigate, onEdit, onDelete, onManageAdmins
         </div>
 
         {lob.description && (
-          <p className="text-sm text-neutral-500 mb-4 line-clamp-2 leading-relaxed">{lob.description}</p>
+          <p className="text-sm mb-4 line-clamp-2 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{lob.description}</p>
         )}
 
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4 text-xs text-neutral-500">
+          <div className="flex items-center gap-4 text-xs" style={{ color: 'var(--text-muted)' }}>
             <div className="flex items-center gap-1.5">
-              <div className="w-6 h-6 rounded-lg bg-neutral-50 flex items-center justify-center">
-                <FolderOpen className="w-3.5 h-3.5 text-neutral-400" />
+              <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: 'var(--app-bg-muted)' }}>
+                <FolderOpen className="w-3.5 h-3.5" style={{ color: 'var(--text-secondary)' }} />
               </div>
-              <span className="font-medium text-neutral-700">{lob.project_count}</span>
+              <span className="font-medium" style={{ color: 'var(--text-primary)' }}>{lob.project_count}</span>
               <span>projects</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="w-6 h-6 rounded-lg bg-neutral-50 flex items-center justify-center">
-                <Users className="w-3.5 h-3.5 text-neutral-400" />
+              <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: 'var(--app-bg-muted)' }}>
+                <Users className="w-3.5 h-3.5" style={{ color: 'var(--text-secondary)' }} />
               </div>
-              <span className="font-medium text-neutral-700">{lob.member_count}</span>
+              <span className="font-medium" style={{ color: 'var(--text-primary)' }}>{lob.member_count}</span>
               <span>members</span>
             </div>
           </div>
@@ -655,7 +657,7 @@ function LobCard({ lob, superAdmin, onNavigate, onEdit, onDelete, onManageAdmins
             <Badge variant={lob.is_active ? 'active' : 'inactive'} size="xs">
               {lob.is_active ? 'Active' : 'Inactive'}
             </Badge>
-            <ChevronRight className="w-3.5 h-3.5 text-neutral-300 group-hover:text-neutral-400 transition-colors" />
+            <ChevronRight className="w-3.5 h-3.5 transition-colors" style={{ color: 'var(--text-disabled)' }} />
           </div>
         </div>
       </div>
@@ -707,12 +709,15 @@ function LobTable({ lobs, superAdmin, sortKey, sortDir, onSort, onNavigate, onEd
             )}
           </tr>
         </thead>
-        <tbody className="divide-y divide-neutral-50">
+        <tbody>
           {lobs.map((lob) => (
             <tr
               key={lob.id}
-              className="group hover:bg-neutral-50/50 transition-colors cursor-pointer"
+              className="group transition-colors cursor-pointer border-b"
+              style={{ borderColor: 'var(--app-border-subtle)' }}
               onClick={() => onNavigate(lob)}
+              onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'var(--app-bg-subtle)'}
+              onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = ''}
             >
               <td className="px-5 py-3.5">
                 <div className="flex items-center gap-3">
@@ -723,19 +728,19 @@ function LobTable({ lobs, superAdmin, sortKey, sortDir, onSort, onNavigate, onEd
                     <Building2 className="w-4 h-4" style={{ color: lob.color }} />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-neutral-900">{lob.name}</p>
-                    <p className="text-xs text-neutral-400 font-mono">{lob.slug}</p>
+                    <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{lob.name}</p>
+                    <p className="text-xs font-mono" style={{ color: 'var(--text-muted)' }}>{lob.slug}</p>
                   </div>
                 </div>
               </td>
               <td className="px-5 py-3.5 hidden md:table-cell">
-                <p className="text-sm text-neutral-500 truncate max-w-xs">{lob.description || '\u2014'}</p>
+                <p className="text-sm truncate max-w-xs" style={{ color: 'var(--text-secondary)' }}>{lob.description || '\u2014'}</p>
               </td>
               <td className="px-5 py-3.5 text-center">
-                <span className="text-sm font-medium text-neutral-700">{lob.project_count}</span>
+                <span className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>{lob.project_count}</span>
               </td>
               <td className="px-5 py-3.5 text-center">
-                <span className="text-sm font-medium text-neutral-700">{lob.member_count}</span>
+                <span className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>{lob.member_count}</span>
               </td>
               <td className="px-5 py-3.5 text-center">
                 <Badge variant={lob.is_active ? 'active' : 'inactive'} size="xs">
@@ -747,19 +752,28 @@ function LobTable({ lobs, superAdmin, sortKey, sortDir, onSort, onNavigate, onEd
                   <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button
                       onClick={(e) => { e.stopPropagation(); onEdit(lob, e); }}
-                      className="p-1.5 rounded-lg text-neutral-400 hover:text-primary-500 hover:bg-primary-50 transition-all"
+                      className="p-1.5 rounded-lg transition-all"
+                      style={{ color: 'var(--text-muted)' }}
+                      onMouseEnter={e => { e.currentTarget.style.color = 'var(--accent)'; e.currentTarget.style.background = 'var(--accent-subtle)'; }}
+                      onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.background = ''; }}
                     >
                       <Pencil className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={(e) => { e.stopPropagation(); onManageAdmins(lob, e); }}
-                      className="p-1.5 rounded-lg text-neutral-400 hover:text-amber-500 hover:bg-amber-50 transition-all"
+                      className="p-1.5 rounded-lg transition-all"
+                      style={{ color: 'var(--text-muted)' }}
+                      onMouseEnter={e => { e.currentTarget.style.color = '#FF9F0A'; e.currentTarget.style.background = 'rgba(255,159,10,0.1)'; }}
+                      onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.background = ''; }}
                     >
                       <ShieldCheck className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={(e) => { e.stopPropagation(); onDelete(lob, e); }}
-                      className="p-1.5 rounded-lg text-neutral-400 hover:text-danger-500 hover:bg-danger-50 transition-all"
+                      className="p-1.5 rounded-lg transition-all"
+                      style={{ color: 'var(--text-muted)' }}
+                      onMouseEnter={e => { e.currentTarget.style.color = '#FF453A'; e.currentTarget.style.background = 'rgba(255,69,58,0.1)'; }}
+                      onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.background = ''; }}
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -782,7 +796,7 @@ interface ColorPickerProps {
 function ColorPicker({ color, onChange }: ColorPickerProps) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label className="text-xs font-semibold text-neutral-600 tracking-wide uppercase">Color</label>
+      <label className="text-xs font-semibold tracking-wide uppercase" style={{ color: 'var(--text-secondary)' }}>Color</label>
       <div className="flex items-center gap-2.5 flex-wrap">
         {PRESET_COLORS.map((c) => (
           <button
@@ -803,7 +817,7 @@ function ColorPicker({ color, onChange }: ColorPickerProps) {
             onChange={(e) => onChange(e.target.value)}
             className="w-7 h-7 rounded-full cursor-pointer border-2 border-transparent"
           />
-          <span className="text-xs text-neutral-400 font-mono">{color}</span>
+          <span className="text-xs font-mono" style={{ color: 'var(--text-muted)' }}>{color}</span>
         </div>
       </div>
     </div>

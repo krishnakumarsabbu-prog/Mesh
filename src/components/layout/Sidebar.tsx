@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Building2, FolderOpen, Plug, Activity, MessageSquare, Settings, ChevronLeft, ChevronRight, Users, Zap, LogOut, Shield, Library, ChartBar as BarChart2 } from 'lucide-react';
+import { LayoutDashboard, Building2, FolderOpen, Plug, Activity, MessageSquare, Settings, ChevronLeft, ChevronRight, Users, Zap, LogOut, Shield, Library, ChartBar as BarChart2, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUIStore } from '@/store/uiStore';
 import { useAuthStore } from '@/store/authStore';
@@ -28,6 +28,7 @@ const navItems: NavItem[] = [
 
 const adminNavItems: NavItem[] = [
   { label: 'Users', href: '/users', icon: Users, description: 'User management' },
+  { label: 'Audit Logs', href: '/audit', icon: FileText, description: 'System event trail' },
 ];
 
 const systemNavItems: NavItem[] = [

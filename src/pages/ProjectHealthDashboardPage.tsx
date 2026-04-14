@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Activity, ArrowLeft, RefreshCw, CircleCheck as CheckCircle2, TriangleAlert as AlertTriangle, CircleAlert as AlertCircle, Clock, Shield, Zap, TrendingUp, ChartBar as BarChart3, ChevronRight, ExternalLink, Plug, Timer, Wifi } from 'lucide-react';
+import { Activity, ArrowLeft, RefreshCw, CircleCheck as CheckCircle2, TriangleAlert as AlertTriangle, CircleAlert as AlertCircle, Clock, Shield, Zap, TrendingUp, ChartBar as BarChart3, ChevronRight, ExternalLink, Plug, Timer, Wifi, ChartBar as BarChart2 } from 'lucide-react';
 import { useUIStore } from '@/store/uiStore';
 import { projectDashboardApi } from '@/lib/api';
 import {
@@ -294,6 +294,17 @@ export function ProjectHealthDashboardPage() {
         </div>
         <div className="flex items-center gap-3 flex-shrink-0">
           <TimeRangeSelector value={timeRange} onChange={setTimeRange} />
+          <button
+            onClick={() => navigate(`/projects/${projectId}/analytics`)}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-semibold transition-all"
+            style={{ borderColor: 'var(--app-border)', color: 'var(--text-secondary)', background: 'var(--app-bg-muted)' }}
+            onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.color = 'var(--accent)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--app-border)'; e.currentTarget.style.color = 'var(--text-secondary)'; }}
+            title="View analytics"
+          >
+            <BarChart2 className="w-3.5 h-3.5" />
+            Analytics
+          </button>
           <button
             onClick={handleRefresh}
             disabled={refreshing}

@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional
 from app.db.base import get_db
 from app.schemas.project import ProjectCreate, ProjectUpdate, ProjectMemberCreate, ProjectMemberUpdate
 from app.services.project_service import project_service
+from app.services.audit_service import audit_service
 from app.api.deps import get_current_user
 from app.models.user import User, UserRole
 
@@ -30,6 +31,7 @@ async def list_projects(
 @router.post("", response_model=dict, status_code=status.HTTP_201_CREATED)
 async def create_project(
     data: ProjectCreate,
+    request: Request,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -40,6 +42,12 @@ async def create_project(
         d = {**project.__dict__}
         d.pop("_sa_instance_state", None)
         d.update({"connector_count": 0, "healthy_count": 0, "degraded_count": 0, "down_count": 0, "member_count": 0})
+        await audit_service.log(
+            db, action="project.create", resource_type="project", resource_id=project.id,
+            user_id=current_user.id, tenant_id=current_user.tenant_id,
+            ip_address=request.client.host if request.client else None,
+            changes={"name": project.name, "lob_id": project.lob_id},
+        )
         return d
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
@@ -64,6 +72,7 @@ async def get_project(
 async def update_project(
     project_id: str,
     data: ProjectUpdate,
+    request: Request,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -77,12 +86,19 @@ async def update_project(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
     d = {**project.__dict__}
     d.pop("_sa_instance_state", None)
+    await audit_service.log(
+        db, action="project.update", resource_type="project", resource_id=project_id,
+        user_id=current_user.id, tenant_id=current_user.tenant_id,
+        ip_address=request.client.host if request.client else None,
+        changes=data.model_dump(exclude_none=True),
+    )
     return d
 
 
 @router.delete("/{project_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_project(
     project_id: str,
+    request: Request,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -90,6 +106,11 @@ async def delete_project(
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only LOB Admins can delete projects")
     if not await project_service.delete(db, project_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
+    await audit_service.log(
+        db, action="project.delete", resource_type="project", resource_id=project_id,
+        user_id=current_user.id, tenant_id=current_user.tenant_id,
+        ip_address=request.client.host if request.client else None,
+    )
 
 
 @router.get("/{project_id}/members", response_model=List[dict])

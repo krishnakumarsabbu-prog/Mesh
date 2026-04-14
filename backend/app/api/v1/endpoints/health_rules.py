@@ -21,12 +21,13 @@ from __future__ import annotations
 import logging
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user
 from app.db.base import get_db
 from app.models.user import User
+from app.services.audit_service import audit_service
 from app.schemas.health_rule import (
     HealthRuleCreate,
     HealthRuleListResponse,
@@ -182,6 +183,7 @@ async def list_rules(
 @router.post("", response_model=HealthRuleResponse, status_code=201)
 async def create_rule(
     payload: HealthRuleCreate,
+    request: Request,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> HealthRuleResponse:
@@ -192,6 +194,12 @@ async def create_rule(
         )
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc))
+    await audit_service.log(
+        db, action="rule.create", resource_type="health_rule", resource_id=rule.id,
+        user_id=current_user.id, tenant_id=current_user.tenant_id,
+        ip_address=request.client.host if request.client else None,
+        changes={"name": rule.name, "severity": str(rule.severity), "scope": str(rule.scope)},
+    )
     return HealthRuleResponse.from_orm_rule(rule)
 
 
@@ -264,6 +272,7 @@ async def get_rule(
 async def update_rule(
     rule_id: str,
     payload: HealthRuleUpdate,
+    request: Request,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> HealthRuleResponse:
@@ -274,6 +283,12 @@ async def update_rule(
         )
     except ValueError as exc:
         raise HTTPException(status_code=404 if "not found" in str(exc) else 422, detail=str(exc))
+    await audit_service.log(
+        db, action="rule.update", resource_type="health_rule", resource_id=rule_id,
+        user_id=current_user.id, tenant_id=current_user.tenant_id,
+        ip_address=request.client.host if request.client else None,
+        changes=payload.model_dump(exclude_none=True, exclude={"conditions"}),
+    )
     return HealthRuleResponse.from_orm_rule(rule)
 
 
@@ -281,6 +296,7 @@ async def update_rule(
 async def update_rule_status(
     rule_id: str,
     payload: HealthRuleStatusUpdate,
+    request: Request,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> HealthRuleResponse:
@@ -291,12 +307,19 @@ async def update_rule_status(
         )
     except ValueError as exc:
         raise HTTPException(status_code=404 if "not found" in str(exc) else 422, detail=str(exc))
+    await audit_service.log(
+        db, action="rule.status_change", resource_type="health_rule", resource_id=rule_id,
+        user_id=current_user.id, tenant_id=current_user.tenant_id,
+        ip_address=request.client.host if request.client else None,
+        changes={"status": payload.status},
+    )
     return HealthRuleResponse.from_orm_rule(rule)
 
 
 @router.delete("/{rule_id}", status_code=204)
 async def delete_rule(
     rule_id: str,
+    request: Request,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> None:
@@ -309,3 +332,8 @@ async def delete_rule(
         raise HTTPException(status_code=403, detail=str(exc))
     if not deleted:
         raise HTTPException(status_code=404, detail=f"Rule '{rule_id}' not found")
+    await audit_service.log(
+        db, action="rule.delete", resource_type="health_rule", resource_id=rule_id,
+        user_id=current_user.id, tenant_id=current_user.tenant_id,
+        ip_address=request.client.host if request.client else None,
+    )

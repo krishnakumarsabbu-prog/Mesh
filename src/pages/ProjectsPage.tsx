@@ -10,7 +10,6 @@ import { useUIStore } from '@/store/uiStore';
 import { projectApi, lobApi } from '@/lib/api';
 import { Project, Lob } from '@/types';
 import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
 import { StatusBadge } from '@/components/ui/Badge';
 import { Modal, ConfirmModal } from '@/components/ui/Modal';
 import { Input, TextArea, Select } from '@/components/ui/Input';
@@ -171,6 +170,12 @@ export function ProjectsPage() {
 
   const hasFilters = search || statusFilter || envFilter || (lobFilter && !lobIdFilter);
 
+  const filterSelectStyle: React.CSSProperties = {
+    background: 'var(--app-bg-muted)',
+    border: '1px solid var(--app-border)',
+    color: 'var(--text-primary)',
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
       <PageHeader
@@ -187,16 +192,21 @@ export function ProjectsPage() {
 
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative flex-1 min-w-[200px] max-w-xs">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: 'var(--text-muted)' }} />
           <input
             type="text"
             placeholder="Search projects..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-sm border border-neutral-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400"
+            className="w-full pl-9 pr-3 py-2 text-sm rounded-xl outline-none focus-ring transition-all"
+            style={filterSelectStyle}
           />
           {search && (
-            <button onClick={() => setSearch('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600">
+            <button
+              onClick={() => setSearch('')}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 transition-colors"
+              style={{ color: 'var(--text-muted)' }}
+            >
               <X className="w-3.5 h-3.5" />
             </button>
           )}
@@ -206,7 +216,8 @@ export function ProjectsPage() {
           <select
             value={lobFilter}
             onChange={e => setLobFilter(e.target.value)}
-            className="text-sm border border-neutral-200 rounded-xl px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400"
+            className="text-sm rounded-xl px-3 py-2 outline-none focus-ring appearance-none transition-all"
+            style={filterSelectStyle}
           >
             <option value="">All LOBs</option>
             {lobs.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
@@ -216,7 +227,8 @@ export function ProjectsPage() {
         <select
           value={statusFilter}
           onChange={e => setStatusFilter(e.target.value)}
-          className="text-sm border border-neutral-200 rounded-xl px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400"
+          className="text-sm rounded-xl px-3 py-2 outline-none focus-ring appearance-none transition-all"
+          style={filterSelectStyle}
         >
           <option value="">All Statuses</option>
           {STATUS_OPTIONS.map(s => (
@@ -227,7 +239,8 @@ export function ProjectsPage() {
         <select
           value={envFilter}
           onChange={e => setEnvFilter(e.target.value)}
-          className="text-sm border border-neutral-200 rounded-xl px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400"
+          className="text-sm rounded-xl px-3 py-2 outline-none focus-ring appearance-none transition-all"
+          style={filterSelectStyle}
         >
           <option value="">All Environments</option>
           {ENV_OPTIONS.map(e => (
@@ -238,23 +251,30 @@ export function ProjectsPage() {
         {hasFilters && (
           <button
             onClick={() => { setSearch(''); setStatusFilter(''); setEnvFilter(''); setLobFilter(''); }}
-            className="flex items-center gap-1.5 text-xs text-neutral-500 hover:text-danger-500 transition-colors px-2 py-1.5 rounded-lg hover:bg-danger-50"
+            className="flex items-center gap-1.5 text-xs px-2 py-1.5 rounded-lg transition-colors"
+            style={{ color: 'var(--text-muted)' }}
+            onMouseEnter={e => { e.currentTarget.style.color = '#FF453A'; e.currentTarget.style.background = 'rgba(255,69,58,0.08)'; }}
+            onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.background = ''; }}
           >
             <X className="w-3 h-3" /> Clear
           </button>
         )}
 
-        <div className="ml-auto flex items-center gap-1 border border-neutral-200 rounded-xl p-1 bg-white">
+        <div
+          className="ml-auto flex items-center gap-1 rounded-xl p-1"
+          style={{ border: '1px solid var(--app-border)', background: 'var(--app-surface)' }}
+        >
           {(['card', 'list', 'table'] as ViewMode[]).map((m) => {
             const Icon = m === 'card' ? LayoutGrid : m === 'list' ? List : TableIcon;
             return (
               <button
                 key={m}
                 onClick={() => setViewMode(m)}
-                className={cn(
-                  'p-1.5 rounded-lg transition-all',
-                  viewMode === m ? 'bg-neutral-900 text-white' : 'text-neutral-400 hover:text-neutral-600'
-                )}
+                className="p-1.5 rounded-lg transition-all"
+                style={viewMode === m
+                  ? { background: 'var(--accent)', color: '#fff' }
+                  : { color: 'var(--text-muted)' }
+                }
               >
                 <Icon className="w-3.5 h-3.5" />
               </button>
@@ -271,12 +291,15 @@ export function ProjectsPage() {
         ) : (
           <div className="space-y-2">
             {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="h-14 bg-neutral-100 rounded-xl animate-pulse" />
+              <div key={i} className="h-14 rounded-xl shimmer-bg" />
             ))}
           </div>
         )
       ) : filtered.length === 0 ? (
-        <Card>
+        <div
+          className="rounded-2xl p-8"
+          style={{ background: 'var(--app-surface)', border: '1px solid var(--app-border)' }}
+        >
           <EmptyState
             icon={FolderOpen}
             title={hasFilters ? 'No matching projects' : 'No Projects'}
@@ -289,7 +312,7 @@ export function ProjectsPage() {
               ) : undefined
             }
           />
-        </Card>
+        </div>
       ) : viewMode === 'card' ? (
         <ProjectCardGrid
           projects={filtered}
@@ -369,12 +392,13 @@ export function ProjectsPage() {
               options={ENV_OPTIONS.map(e => ({ value: e, label: e.charAt(0).toUpperCase() + e.slice(1) }))}
             />
             <div>
-              <label className="block text-xs font-medium text-neutral-600 mb-1.5">Color</label>
+              <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>Color</label>
               <input
                 type="color"
                 value={form.color}
                 onChange={e => setForm({ ...form, color: e.target.value })}
-                className="w-full h-9 rounded-xl border border-neutral-200 cursor-pointer"
+                className="w-full h-9 rounded-xl cursor-pointer"
+                style={{ border: '1px solid var(--app-border)' }}
               />
             </div>
           </div>
@@ -419,12 +443,13 @@ export function ProjectsPage() {
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-neutral-600 mb-1.5">Color</label>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>Color</label>
             <input
               type="color"
               value={editForm.color}
               onChange={e => setEditForm({ ...editForm, color: e.target.value })}
-              className="w-full h-9 rounded-xl border border-neutral-200 cursor-pointer"
+              className="w-full h-9 rounded-xl cursor-pointer"
+              style={{ border: '1px solid var(--app-border)' }}
             />
           </div>
         </form>
@@ -457,23 +482,44 @@ function ProjectCardGrid({ projects, lobs, canCreate, onNavigate, onEdit, onDele
         const total = proj.connector_count;
         const pct = total > 0 ? Math.round((proj.healthy_count / total) * 100) : 100;
         return (
-          <Card
+          <div
             key={proj.id}
-            hoverable
-            className="cursor-pointer group relative"
+            className="group relative rounded-2xl cursor-pointer transition-all duration-200"
+            style={{
+              background: 'var(--app-surface)',
+              border: '1px solid var(--app-border)',
+              boxShadow: 'var(--shadow-sm)',
+              padding: '1.25rem',
+            }}
             onClick={() => onNavigate(proj.id)}
+            onMouseEnter={e => {
+              (e.currentTarget as HTMLElement).style.boxShadow = 'var(--shadow-lg)';
+              (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)';
+              (e.currentTarget as HTMLElement).style.borderColor = 'var(--app-border-strong)';
+            }}
+            onMouseLeave={e => {
+              (e.currentTarget as HTMLElement).style.boxShadow = 'var(--shadow-sm)';
+              (e.currentTarget as HTMLElement).style.transform = '';
+              (e.currentTarget as HTMLElement).style.borderColor = 'var(--app-border)';
+            }}
           >
             {canCreate && (
               <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
                 <button
                   onClick={e => { e.stopPropagation(); onEdit(proj); }}
-                  className="p-1.5 rounded-lg text-neutral-400 hover:text-primary-500 hover:bg-primary-50 transition-all"
+                  className="p-1.5 rounded-lg transition-all"
+                  style={{ color: 'var(--text-muted)' }}
+                  onMouseEnter={e => { e.currentTarget.style.color = 'var(--accent)'; e.currentTarget.style.background = 'var(--accent-subtle)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.background = ''; }}
                 >
                   <Pencil className="w-3.5 h-3.5" />
                 </button>
                 <button
                   onClick={e => { e.stopPropagation(); onDelete(proj); }}
-                  className="p-1.5 rounded-lg text-neutral-400 hover:text-danger-500 hover:bg-danger-50 transition-all"
+                  className="p-1.5 rounded-lg transition-all"
+                  style={{ color: 'var(--text-muted)' }}
+                  onMouseEnter={e => { e.currentTarget.style.color = '#FF453A'; e.currentTarget.style.background = 'rgba(255,69,58,0.1)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.background = ''; }}
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
@@ -488,23 +534,28 @@ function ProjectCardGrid({ projects, lobs, canCreate, onNavigate, onEdit, onDele
                 <FolderOpen className="w-5 h-5" style={{ color: proj.color || '#30D158' }} />
               </div>
               <div className="flex-1 min-w-0 pr-12">
-                <h3 className="text-sm font-semibold text-neutral-900 truncate">{proj.name}</h3>
-                <p className="text-xs text-neutral-400 truncate">{getLobName(proj.lob_id)}</p>
+                <h3 className="text-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{proj.name}</h3>
+                <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>{getLobName(proj.lob_id)}</p>
               </div>
             </div>
 
             <div className="flex items-center gap-2 mb-4">
               <StatusBadge status={proj.status} size="xs" />
-              <span className="text-xs px-2 py-0.5 bg-neutral-100 rounded-full capitalize text-neutral-500">{proj.environment}</span>
+              <span
+                className="text-xs px-2 py-0.5 rounded-full capitalize"
+                style={{ background: 'var(--app-bg-muted)', color: 'var(--text-secondary)' }}
+              >
+                {proj.environment}
+              </span>
             </div>
 
             {total > 0 && (
               <div className="mb-4">
-                <div className="flex justify-between text-xs text-neutral-500 mb-1">
+                <div className="flex justify-between text-xs mb-1" style={{ color: 'var(--text-muted)' }}>
                   <span>Health</span>
                   <span className="font-medium">{pct}%</span>
                 </div>
-                <div className="h-1.5 bg-neutral-100 rounded-full overflow-hidden">
+                <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--app-bg-muted)' }}>
                   <div
                     className="h-full rounded-full transition-all duration-500"
                     style={{
@@ -516,20 +567,23 @@ function ProjectCardGrid({ projects, lobs, canCreate, onNavigate, onEdit, onDele
               </div>
             )}
 
-            <div className="flex items-center gap-3 text-xs text-neutral-500 pt-3 border-t border-neutral-50">
+            <div
+              className="flex items-center gap-3 text-xs pt-3 border-t"
+              style={{ borderColor: 'var(--app-border-subtle)', color: 'var(--text-muted)' }}
+            >
               <div className="flex items-center gap-1">
                 <Plug className="w-3 h-3" /> <span>{proj.connector_count}</span>
               </div>
-              <div className="flex items-center gap-1 text-success-600">
+              <div className="flex items-center gap-1" style={{ color: '#30D158' }}>
                 <CheckCircle className="w-3 h-3" /> <span>{proj.healthy_count}</span>
               </div>
               {proj.degraded_count > 0 && (
-                <div className="flex items-center gap-1 text-amber-500">
+                <div className="flex items-center gap-1" style={{ color: '#FF9F0A' }}>
                   <AlertTriangle className="w-3 h-3" /> <span>{proj.degraded_count}</span>
                 </div>
               )}
               {proj.down_count > 0 && (
-                <div className="flex items-center gap-1 text-danger-500">
+                <div className="flex items-center gap-1" style={{ color: '#FF453A' }}>
                   <AlertCircle className="w-3 h-3" /> <span>{proj.down_count}</span>
                 </div>
               )}
@@ -537,7 +591,7 @@ function ProjectCardGrid({ projects, lobs, canCreate, onNavigate, onEdit, onDele
                 <Users className="w-3 h-3" /> <span>{proj.member_count}</span>
               </div>
             </div>
-          </Card>
+          </div>
         );
       })}
     </div>
@@ -559,8 +613,17 @@ function ProjectListView({ projects, lobs, canCreate, onNavigate, onEdit, onDele
         return (
           <div
             key={proj.id}
-            className="flex items-center gap-4 px-4 py-3.5 bg-white rounded-xl border border-neutral-100 hover:border-neutral-200 hover:shadow-sm transition-all cursor-pointer group"
+            className="flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all cursor-pointer group"
+            style={{ background: 'var(--app-surface)', border: '1px solid var(--app-border)' }}
             onClick={() => onNavigate(proj.id)}
+            onMouseEnter={e => {
+              (e.currentTarget as HTMLElement).style.borderColor = 'var(--app-border-strong)';
+              (e.currentTarget as HTMLElement).style.boxShadow = 'var(--shadow-sm)';
+            }}
+            onMouseLeave={e => {
+              (e.currentTarget as HTMLElement).style.borderColor = 'var(--app-border)';
+              (e.currentTarget as HTMLElement).style.boxShadow = '';
+            }}
           >
             <div
               className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
@@ -571,14 +634,14 @@ function ProjectListView({ projects, lobs, canCreate, onNavigate, onEdit, onDele
 
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <p className="text-sm font-semibold text-neutral-900 truncate">{proj.name}</p>
+                <p className="text-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{proj.name}</p>
                 <StatusBadge status={proj.status} size="xs" />
               </div>
-              <p className="text-xs text-neutral-400 truncate">{getLobName(proj.lob_id)} · {proj.environment}</p>
+              <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>{getLobName(proj.lob_id)} · {proj.environment}</p>
             </div>
 
             <div className="hidden md:flex items-center gap-2 w-32">
-              <div className="flex-1 h-1.5 bg-neutral-100 rounded-full overflow-hidden">
+              <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--app-bg-muted)' }}>
                 <div
                   className="h-full rounded-full"
                   style={{
@@ -587,26 +650,38 @@ function ProjectListView({ projects, lobs, canCreate, onNavigate, onEdit, onDele
                   }}
                 />
               </div>
-              <span className="text-xs text-neutral-500 w-8 text-right">{pct}%</span>
+              <span className="text-xs w-8 text-right" style={{ color: 'var(--text-muted)' }}>{pct}%</span>
             </div>
 
-            <div className="hidden md:flex items-center gap-3 text-xs text-neutral-400">
+            <div className="hidden md:flex items-center gap-3 text-xs" style={{ color: 'var(--text-muted)' }}>
               <span className="flex items-center gap-1"><Plug className="w-3 h-3" />{proj.connector_count}</span>
               <span className="flex items-center gap-1"><Users className="w-3 h-3" />{proj.member_count}</span>
             </div>
 
             {canCreate && (
               <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button onClick={e => { e.stopPropagation(); onEdit(proj); }} className="p-1.5 rounded-lg text-neutral-400 hover:text-primary-500 hover:bg-primary-50 transition-all">
+                <button
+                  onClick={e => { e.stopPropagation(); onEdit(proj); }}
+                  className="p-1.5 rounded-lg transition-all"
+                  style={{ color: 'var(--text-muted)' }}
+                  onMouseEnter={e => { e.currentTarget.style.color = 'var(--accent)'; e.currentTarget.style.background = 'var(--accent-subtle)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.background = ''; }}
+                >
                   <Pencil className="w-3.5 h-3.5" />
                 </button>
-                <button onClick={e => { e.stopPropagation(); onDelete(proj); }} className="p-1.5 rounded-lg text-neutral-400 hover:text-danger-500 hover:bg-danger-50 transition-all">
+                <button
+                  onClick={e => { e.stopPropagation(); onDelete(proj); }}
+                  className="p-1.5 rounded-lg transition-all"
+                  style={{ color: 'var(--text-muted)' }}
+                  onMouseEnter={e => { e.currentTarget.style.color = '#FF453A'; e.currentTarget.style.background = 'rgba(255,69,58,0.1)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.background = ''; }}
+                >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
               </div>
             )}
 
-            <ChevronRight className="w-4 h-4 text-neutral-300 group-hover:text-neutral-400 transition-colors flex-shrink-0" />
+            <ChevronRight className="w-4 h-4 flex-shrink-0 transition-colors" style={{ color: 'var(--text-disabled)' }} />
           </div>
         );
       })}
@@ -627,25 +702,32 @@ function ProjectTableView({ projects, lobs, canCreate, sortField, sortDir, onSor
   const SortHeader = ({ field, label }: { field: SortField; label: string }) => (
     <button
       onClick={() => onSort(field)}
-      className="flex items-center gap-1 text-xs font-medium text-neutral-500 hover:text-neutral-700 transition-colors"
+      className="flex items-center gap-1 text-xs font-medium transition-colors"
+      style={{ color: 'var(--text-secondary)' }}
     >
       {label}
-      <ArrowUpDown className={cn('w-3 h-3', sortField === field ? 'text-primary-500' : 'text-neutral-300')} />
+      <ArrowUpDown className="w-3 h-3" style={{ color: sortField === field ? 'var(--accent)' : 'var(--text-disabled)' }} />
     </button>
   );
 
   return (
-    <div className="bg-white rounded-2xl border border-neutral-100 overflow-hidden">
+    <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--app-surface)', border: '1px solid var(--app-border)' }}>
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-neutral-100 bg-neutral-50/50">
+            <tr className="border-b" style={{ borderColor: 'var(--app-border)', background: 'var(--app-bg-subtle)' }}>
               <th className="text-left px-4 py-3"><SortHeader field="name" label="Project" /></th>
-              <th className="text-left px-4 py-3 hidden md:table-cell"><span className="text-xs font-medium text-neutral-500">LOB</span></th>
+              <th className="text-left px-4 py-3 hidden md:table-cell">
+                <span className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>LOB</span>
+              </th>
               <th className="text-left px-4 py-3"><SortHeader field="status" label="Status" /></th>
-              <th className="text-left px-4 py-3 hidden lg:table-cell"><span className="text-xs font-medium text-neutral-500">Environment</span></th>
+              <th className="text-left px-4 py-3 hidden lg:table-cell">
+                <span className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>Environment</span>
+              </th>
               <th className="text-left px-4 py-3 hidden lg:table-cell"><SortHeader field="connector_count" label="Connectors" /></th>
-              <th className="text-left px-4 py-3 hidden lg:table-cell"><span className="text-xs font-medium text-neutral-500">Health</span></th>
+              <th className="text-left px-4 py-3 hidden lg:table-cell">
+                <span className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>Health</span>
+              </th>
               <th className="text-left px-4 py-3 hidden xl:table-cell"><SortHeader field="member_count" label="Members" /></th>
               <th className="text-right px-4 py-3"></th>
             </tr>
@@ -658,10 +740,13 @@ function ProjectTableView({ projects, lobs, canCreate, sortField, sortDir, onSor
                 <tr
                   key={proj.id}
                   className={cn(
-                    'hover:bg-neutral-50 cursor-pointer transition-colors group',
-                    idx !== projects.length - 1 && 'border-b border-neutral-50'
+                    'cursor-pointer transition-colors group',
+                    idx !== projects.length - 1 && 'border-b'
                   )}
+                  style={{ borderColor: 'var(--app-border-subtle)' }}
                   onClick={() => onNavigate(proj.id)}
+                  onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'var(--app-bg-subtle)'}
+                  onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = ''}
                 >
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2.5">
@@ -672,26 +757,31 @@ function ProjectTableView({ projects, lobs, canCreate, sortField, sortDir, onSor
                         <FolderOpen className="w-3.5 h-3.5" style={{ color: proj.color || '#30D158' }} />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-neutral-900">{proj.name}</p>
-                        <p className="text-xs text-neutral-400 font-mono">{proj.slug}</p>
+                        <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{proj.name}</p>
+                        <p className="text-xs font-mono" style={{ color: 'var(--text-muted)' }}>{proj.slug}</p>
                       </div>
                     </div>
                   </td>
                   <td className="px-4 py-3 hidden md:table-cell">
-                    <span className="text-sm text-neutral-600">{getLobName(proj.lob_id)}</span>
+                    <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>{getLobName(proj.lob_id)}</span>
                   </td>
                   <td className="px-4 py-3">
                     <StatusBadge status={proj.status} size="xs" />
                   </td>
                   <td className="px-4 py-3 hidden lg:table-cell">
-                    <span className="text-xs px-2 py-0.5 bg-neutral-100 rounded-full capitalize text-neutral-500">{proj.environment}</span>
+                    <span
+                      className="text-xs px-2 py-0.5 rounded-full capitalize"
+                      style={{ background: 'var(--app-bg-muted)', color: 'var(--text-secondary)' }}
+                    >
+                      {proj.environment}
+                    </span>
                   </td>
                   <td className="px-4 py-3 hidden lg:table-cell">
-                    <span className="text-sm text-neutral-600">{proj.connector_count}</span>
+                    <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>{proj.connector_count}</span>
                   </td>
                   <td className="px-4 py-3 hidden lg:table-cell">
                     <div className="flex items-center gap-2 w-24">
-                      <div className="flex-1 h-1.5 bg-neutral-100 rounded-full overflow-hidden">
+                      <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--app-bg-muted)' }}>
                         <div
                           className="h-full rounded-full"
                           style={{
@@ -700,24 +790,30 @@ function ProjectTableView({ projects, lobs, canCreate, sortField, sortDir, onSor
                           }}
                         />
                       </div>
-                      <span className="text-xs text-neutral-500 w-8 text-right">{pct}%</span>
+                      <span className="text-xs w-8 text-right" style={{ color: 'var(--text-muted)' }}>{pct}%</span>
                     </div>
                   </td>
                   <td className="px-4 py-3 hidden xl:table-cell">
-                    <span className="text-sm text-neutral-600">{proj.member_count}</span>
+                    <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>{proj.member_count}</span>
                   </td>
                   <td className="px-4 py-3 text-right">
                     {canCreate && (
                       <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
                           onClick={e => { e.stopPropagation(); onEdit(proj); }}
-                          className="p-1.5 rounded-lg text-neutral-400 hover:text-primary-500 hover:bg-primary-50 transition-all"
+                          className="p-1.5 rounded-lg transition-all"
+                          style={{ color: 'var(--text-muted)' }}
+                          onMouseEnter={e => { e.currentTarget.style.color = 'var(--accent)'; e.currentTarget.style.background = 'var(--accent-subtle)'; }}
+                          onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.background = ''; }}
                         >
                           <Pencil className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={e => { e.stopPropagation(); onDelete(proj); }}
-                          className="p-1.5 rounded-lg text-neutral-400 hover:text-danger-500 hover:bg-danger-50 transition-all"
+                          className="p-1.5 rounded-lg transition-all"
+                          style={{ color: 'var(--text-muted)' }}
+                          onMouseEnter={e => { e.currentTarget.style.color = '#FF453A'; e.currentTarget.style.background = 'rgba(255,69,58,0.1)'; }}
+                          onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.background = ''; }}
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>

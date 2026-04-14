@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback, useRef } from 'react';
 import { X, TriangleAlert as AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from './Button';
@@ -22,6 +22,8 @@ const sizes = {
 };
 
 export function Modal({ open, onClose, title, subtitle, size = 'md', footer, children, noPadding = false }: ModalProps) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+
   const handleKey = useCallback((e: KeyboardEvent) => {
     if (e.key === 'Escape') onClose();
   }, [onClose]);
@@ -30,6 +32,12 @@ export function Modal({ open, onClose, title, subtitle, size = 'md', footer, chi
     if (open) {
       document.body.style.overflow = 'hidden';
       document.addEventListener('keydown', handleKey);
+      setTimeout(() => {
+        const focusable = dialogRef.current?.querySelector<HTMLElement>(
+          'input, button, textarea, select, [tabindex]:not([tabindex="-1"])'
+        );
+        focusable?.focus();
+      }, 80);
     } else {
       document.body.style.overflow = '';
     }
@@ -42,12 +50,19 @@ export function Modal({ open, onClose, title, subtitle, size = 'md', footer, chi
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-label={title}
+    >
       <div
         className="absolute inset-0 modal-backdrop animate-fade-in"
         onClick={onClose}
+        aria-hidden="true"
       />
       <div
+        ref={dialogRef}
         className={cn(
           'relative w-full rounded-3xl overflow-hidden animate-modal-enter',
           sizes[size],
@@ -80,7 +95,7 @@ export function Modal({ open, onClose, title, subtitle, size = 'md', footer, chi
             </div>
             <button
               onClick={onClose}
-              className="flex-shrink-0 p-1.5 rounded-xl transition-all duration-150"
+              className="flex-shrink-0 p-1.5 rounded-xl transition-all duration-150 focus-ring"
               style={{ color: 'var(--text-muted)' }}
               onMouseEnter={(e) => {
                 (e.currentTarget as HTMLElement).style.background = 'var(--app-bg-muted)';
@@ -90,6 +105,7 @@ export function Modal({ open, onClose, title, subtitle, size = 'md', footer, chi
                 (e.currentTarget as HTMLElement).style.background = '';
                 (e.currentTarget as HTMLElement).style.color = 'var(--text-muted)';
               }}
+              aria-label="Close dialog"
             >
               <X className="w-4 h-4" />
             </button>
