@@ -6,6 +6,7 @@ import { NotificationContainer } from '@/components/ui/Notification';
 import { CommandPalette } from '@/components/search/CommandPalette';
 import { useAuthStore } from '@/store/authStore';
 import { useUIStore } from '@/store/uiStore';
+import { useThemeStore } from '@/store/themeStore';
 import { cn } from '@/lib/utils';
 
 function PageTransition({ children }: { children: React.ReactNode }) {
@@ -20,10 +21,16 @@ function PageTransition({ children }: { children: React.ReactNode }) {
 export function AppLayout() {
   const { isAuthenticated } = useAuthStore();
   const { sidebarCollapsed, commandPaletteOpen, openCommandPalette, closeCommandPalette } = useUIStore();
+  const { theme } = useThemeStore();
 
   useEffect(() => {
-    document.documentElement.classList.add('dark');
-  }, []);
+    const root = document.documentElement;
+    root.classList.remove('theme-graphite', 'theme-aurora', 'theme-frost');
+    if (theme === 'aurora') root.classList.add('theme-aurora');
+    else if (theme === 'frost') root.classList.add('theme-frost');
+    document.body.style.background = 'var(--app-bg)';
+    document.body.style.color = 'var(--text-primary)';
+  }, [theme]);
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {

@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import { ROLE_LABELS } from '@/lib/permissions';
 import { BreadcrumbItem } from '@/types';
 import { GlobalSearch } from '@/components/ui/GlobalSearch';
+import { ThemeSwitcher } from '@/components/ui/ThemeSwitcher';
 
 const WORKSPACES = [
   { id: 'prod', label: 'Production', color: '#30D158' },
@@ -325,6 +326,8 @@ export function Header() {
 
         <div className="flex items-center gap-1.5 flex-shrink-0">
           <WorkspaceSwitcher />
+
+          <ThemeSwitcher />
 
           <button
             onClick={openSearch}
