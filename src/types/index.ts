@@ -674,3 +674,148 @@ export interface RuleMetadata {
   logic_groups: RuleMetadataOption[];
   health_status_values: string[];
 }
+
+// ─── Analytics Types ──────────────────────────────────────────────────────────
+
+export type AnalyticsTimeRange = '24h' | '7d' | '30d' | '90d' | 'custom';
+export type AnalyticsGranularity = 'hourly' | 'daily' | 'weekly' | 'monthly';
+
+export interface AnalyticsTrendPoint {
+  timestamp: string;
+  score?: number | null;
+  status?: string | null;
+  run_count?: number;
+}
+
+export interface AnalyticsAvailabilityPoint {
+  timestamp: string;
+  availability?: number | null;
+}
+
+export interface AnalyticsIncidentPoint {
+  timestamp: string;
+  incidents: number;
+  total_runs?: number;
+}
+
+export interface AnalyticsSlaPoint {
+  timestamp: string;
+  sla?: number | null;
+}
+
+export interface AnalyticsConnectorTrendPoint {
+  timestamp: string;
+  score?: number | null;
+  avg_response_time_ms?: number | null;
+  success_rate?: number | null;
+}
+
+export interface AnalyticsProjectTrends {
+  project_id: string;
+  time_range: string;
+  granularity: string;
+  hours: number;
+  since: string;
+  until: string;
+  total_runs: number;
+  score_delta?: number | null;
+  health_trend: AnalyticsTrendPoint[];
+  availability_trend: AnalyticsAvailabilityPoint[];
+  incident_trend: AnalyticsIncidentPoint[];
+  sla_trend: AnalyticsSlaPoint[];
+  connector_trends: Record<string, AnalyticsConnectorTrendPoint[]>;
+}
+
+export interface AnalyticsProjectSummary {
+  project_id: string;
+  project_name: string;
+  project_color?: string;
+  avg_health_score?: number | null;
+  availability_pct?: number | null;
+  sla_pct?: number | null;
+  uptime_pct?: number | null;
+  incident_count: number;
+  total_runs: number;
+  score_trend: Array<{ timestamp: string; score?: number | null }>;
+}
+
+export interface AnalyticsProjectComparison {
+  time_range: string;
+  hours: number;
+  since: string;
+  until: string;
+  projects: AnalyticsProjectSummary[];
+}
+
+export interface ConnectorPerformanceTrendPoint {
+  timestamp: string;
+  success_rate?: number | null;
+  avg_response_time_ms?: number | null;
+  avg_score?: number | null;
+  total?: number;
+}
+
+export interface ConnectorPerformanceMetrics {
+  connector_id?: string;
+  connector_name: string;
+  connector_slug?: string;
+  connector_category?: string;
+  total_executions: number;
+  success_count: number;
+  failure_count: number;
+  success_rate: number;
+  avg_response_time_ms?: number | null;
+  min_response_time_ms?: number | null;
+  max_response_time_ms?: number | null;
+  p95_response_time_ms?: number | null;
+  avg_health_score?: number | null;
+  top_errors: Array<{ message: string; count: number }>;
+  trend: ConnectorPerformanceTrendPoint[];
+}
+
+export interface AnalyticsConnectorHistory {
+  project_id: string;
+  time_range: string;
+  granularity: string;
+  hours: number;
+  since: string;
+  until: string;
+  connectors: ConnectorPerformanceMetrics[];
+}
+
+export interface ConnectorSlaMetrics {
+  connector_name: string;
+  connector_id?: string;
+  uptime_pct?: number | null;
+  sla_pct?: number | null;
+  breach: number;
+  total_executions: number;
+  success_count: number;
+  failure_count: number;
+}
+
+export interface DowntimePeriod {
+  timestamp?: string;
+  run_id?: string;
+  sla_pct: number;
+  failure_count: number;
+  duration_ms?: number;
+}
+
+export interface AnalyticsSlaMetrics {
+  project_id: string;
+  time_range: string;
+  hours: number;
+  since: string;
+  until: string;
+  sla_threshold: number;
+  uptime_pct?: number | null;
+  sla_pct?: number | null;
+  breach_count: number;
+  downtime_periods: DowntimePeriod[];
+  mttr_minutes?: number | null;
+  mtbf_minutes?: number | null;
+  total_runs: number;
+  connector_sla: ConnectorSlaMetrics[];
+  sla_trend: AnalyticsSlaPoint[];
+}

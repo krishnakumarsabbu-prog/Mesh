@@ -184,6 +184,41 @@ export const projectDashboardApi = {
     apiClient.get(`/dashboard/project/${projectId}/connector/${connectorId}`, { params }),
 };
 
+export const analyticsApi = {
+  projectTrends: (
+    projectId: string,
+    params?: { time_range?: string; granularity?: string; custom_start?: string; custom_end?: string }
+  ) => apiClient.get(`/analytics/project/${projectId}/trends`, { params }),
+
+  projectComparison: (
+    projectId: string,
+    params?: { time_range?: string; custom_start?: string; custom_end?: string }
+  ) => apiClient.get(`/analytics/project/${projectId}/comparison`, { params }),
+
+  multiProjectComparison: (
+    projectIds: string[],
+    params?: { time_range?: string; custom_start?: string; custom_end?: string }
+  ) => apiClient.get('/analytics/projects/comparison', { params: { project_ids: projectIds, ...params } }),
+
+  slaMetrics: (
+    projectId: string,
+    params?: { time_range?: string; sla_threshold?: number; custom_start?: string; custom_end?: string }
+  ) => apiClient.get(`/analytics/project/${projectId}/sla`, { params }),
+
+  connectorHistory: (
+    projectId: string,
+    params?: { time_range?: string; granularity?: string; custom_start?: string; custom_end?: string }
+  ) => apiClient.get(`/analytics/project/${projectId}/connectors/history`, { params }),
+
+  export: (
+    projectId: string,
+    params?: { format?: string; time_range?: string; custom_start?: string; custom_end?: string }
+  ) => apiClient.get(`/analytics/project/${projectId}/export`, { params }),
+
+  overview: (params?: { lob_id?: string; time_range?: string }) =>
+    apiClient.get('/analytics/overview', { params }),
+};
+
 export const healthRulesApi = {
   metadata: () =>
     apiClient.get('/rules/metadata'),

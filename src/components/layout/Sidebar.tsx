@@ -1,10 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
-import {
-  LayoutDashboard, Building2, FolderOpen, Plug, Activity,
-  MessageSquare, Settings, ChevronLeft, ChevronRight, Users,
-  Zap, LogOut, Shield, Library,
-} from 'lucide-react';
+import { LayoutDashboard, Building2, FolderOpen, Plug, Activity, MessageSquare, Settings, ChevronLeft, ChevronRight, Users, Zap, LogOut, Shield, Library, ChartBar as BarChart2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUIStore } from '@/store/uiStore';
 import { useAuthStore } from '@/store/authStore';
@@ -26,6 +22,7 @@ const navItems: NavItem[] = [
   { label: 'Connector Catalog', href: '/connector-catalog', icon: Library, description: 'Catalog management' },
   { label: 'Health Monitor', href: '/health', icon: Activity, description: 'Real-time health' },
   { label: 'Health Rules', href: '/rules', icon: Shield, description: 'Configurable rules engine' },
+  { label: 'Analytics', href: '/analytics', icon: BarChart2, description: 'Historical trends & SLA' },
   { label: 'AI Assistant', href: '/chatbot', icon: MessageSquare, description: 'Intelligence layer' },
 ];
 

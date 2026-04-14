@@ -15,6 +15,7 @@ import { ChatbotPage } from '@/pages/ChatbotPage';
 import { UsersPage } from '@/pages/UsersPage';
 import { SettingsPage } from '@/pages/SettingsPage';
 import { RulesPage } from '@/pages/RulesPage';
+import { AnalyticsPage } from '@/pages/AnalyticsPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import { NotificationContainer } from '@/components/ui/Notification';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
@@ -68,6 +69,8 @@ export default function App() {
               }
             />
             <Route path="rules" element={<ErrorBoundary><RulesPage /></ErrorBoundary>} />
+            <Route path="analytics" element={<ErrorBoundary><AnalyticsPage /></ErrorBoundary>} />
+            <Route path="projects/:projectId/analytics" element={<ErrorBoundary><AnalyticsPage /></ErrorBoundary>} />
             <Route path="settings" element={<ErrorBoundary><SettingsPage /></ErrorBoundary>} />
           </Route>
           <Route path="*" element={<NotFoundPage />} />
