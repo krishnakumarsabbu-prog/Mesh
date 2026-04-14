@@ -1,5 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 from datetime import datetime
 from typing import Optional
 from app.models.user import User
@@ -8,9 +9,13 @@ from app.core.security import verify_password, get_password_hash, create_access_
 import uuid
 
 
+def _user_query():
+    return select(User).options(selectinload(User.role_assignments))
+
+
 class AuthService:
     async def register(self, db: AsyncSession, data: UserCreate) -> User:
-        result = await db.execute(select(User).where(User.email == data.email))
+        result = await db.execute(_user_query().where(User.email == data.email))
         if result.scalar_one_or_none():
             raise ValueError("Email already registered")
 
@@ -22,12 +27,13 @@ class AuthService:
             role=data.role,
             tenant_id="default",
         )
+        user.role_assignments = []
         db.add(user)
         await db.flush()
         return user
 
     async def create_user_by_admin(self, db: AsyncSession, data: UserAdminCreate, created_by: User) -> User:
-        result = await db.execute(select(User).where(User.email == data.email))
+        result = await db.execute(_user_query().where(User.email == data.email))
         if result.scalar_one_or_none():
             raise ValueError("Email already registered")
 
@@ -39,12 +45,13 @@ class AuthService:
             role=data.role,
             tenant_id=created_by.tenant_id or "default",
         )
+        user.role_assignments = []
         db.add(user)
         await db.flush()
         return user
 
     async def login(self, db: AsyncSession, data: LoginRequest) -> TokenResponse:
-        result = await db.execute(select(User).where(User.email == data.email))
+        result = await db.execute(_user_query().where(User.email == data.email))
         user = result.scalar_one_or_none()
 
         if not user or not verify_password(data.password, user.hashed_password):
@@ -69,7 +76,7 @@ class AuthService:
         if not payload or payload.get("type") != "access":
             return None
         user_id = payload.get("sub")
-        result = await db.execute(select(User).where(User.id == user_id))
+        result = await db.execute(_user_query().where(User.id == user_id))
         return result.scalar_one_or_none()
 
     async def refresh_tokens(self, db: AsyncSession, refresh_token: str) -> TokenResponse:
@@ -78,7 +85,7 @@ class AuthService:
             raise ValueError("Invalid refresh token")
 
         user_id = payload.get("sub")
-        result = await db.execute(select(User).where(User.id == user_id))
+        result = await db.execute(_user_query().where(User.id == user_id))
         user = result.scalar_one_or_none()
 
         if not user or not user.is_active:
