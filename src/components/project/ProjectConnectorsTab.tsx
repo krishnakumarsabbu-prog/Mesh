@@ -1,9 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import {
-  Plug, Plus, Trash2, Settings, ToggleLeft, ToggleRight,
-  ChevronUp, ChevronDown, CheckCircle, XCircle, AlertCircle,
-  Loader, Activity, ExternalLink, Lock, Eye, EyeOff,
-} from 'lucide-react';
+import { Plug, Plus, Trash2, Settings, ToggleLeft, ToggleRight, ChevronUp, ChevronDown, CircleCheck as CheckCircle, Circle as XCircle, CircleAlert as AlertCircle, Loader, Activity, ExternalLink, Lock, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Modal, ConfirmModal } from '@/components/ui/Modal';
 import { Input, Select, TextArea } from '@/components/ui/Input';
