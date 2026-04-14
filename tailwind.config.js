@@ -4,6 +4,7 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
@@ -12,6 +13,7 @@ export default {
           100: '#FAF8F5',
           200: '#F5F2EC',
           300: '#EDE9E0',
+          400: '#E0DBD0',
           DEFAULT: '#F5F2EC',
         },
         primary: {
@@ -61,6 +63,31 @@ export default {
           800: '#27272A',
           900: '#18181B',
         },
+        emerald: {
+          50: '#ECFDF5',
+          100: '#D1FAE5',
+          200: '#A7F3D0',
+          300: '#6EE7B7',
+          400: '#34D399',
+          500: '#10B981',
+          600: '#059669',
+          700: '#047857',
+          800: '#065F46',
+          900: '#064E3B',
+          950: '#022C22',
+        },
+        cyber: {
+          50: '#F0FDF9',
+          100: '#CCFBF1',
+          200: '#99F6E4',
+          300: '#5EEAD4',
+          400: '#2DD4BF',
+          500: '#14B8A6',
+          600: '#0D9488',
+          700: '#0F766E',
+          800: '#115E59',
+          900: '#134E4A',
+        },
       },
       fontFamily: {
         sans: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Display"', '"SF Pro Text"', 'Inter', 'system-ui', 'sans-serif'],
@@ -79,6 +106,9 @@ export default {
         'modal': '0 24px 64px -12px rgba(0, 0, 0, 0.18), 0 0 0 1px rgba(0,0,0,0.06)',
         'sidebar': '1px 0 0 0 rgba(0, 0, 0, 0.06)',
         'header': '0 1px 0 0 rgba(0, 0, 0, 0.06)',
+        'glow-green': '0 0 20px rgba(16, 185, 129, 0.3), 0 0 40px rgba(16, 185, 129, 0.1)',
+        'glow-cyber': '0 0 20px rgba(20, 184, 166, 0.25)',
+        'inner-glow': 'inset 0 1px 0 rgba(255,255,255,0.1)',
       },
       spacing: {
         '68': '17rem',
@@ -91,6 +121,11 @@ export default {
         'slide-up': 'slideUp 0.3s ease-out',
         'scale-in': 'scaleIn 0.2s ease-out',
         'shimmer': 'shimmer 2s linear infinite',
+        'theme-switch': 'themeSwitch 0.4s ease-out',
+        'glow-pulse': 'glowPulse 2s ease-in-out infinite',
+        'slide-in-right': 'slideInRight 0.3s ease-out',
+        'expand-down': 'expandDown 0.2s ease-out',
+        'page-enter': 'pageEnter 0.35s ease-out',
       },
       keyframes: {
         fadeIn: {
@@ -113,9 +148,28 @@ export default {
           '0%': { backgroundPosition: '-200% 0' },
           '100%': { backgroundPosition: '200% 0' },
         },
+        themeSwitch: {
+          '0%': { opacity: '0', transform: 'scale(0.92) rotate(-4deg)' },
+          '100%': { opacity: '1', transform: 'scale(1) rotate(0deg)' },
+        },
+        glowPulse: {
+          '0%, 100%': { opacity: '0.6' },
+          '50%': { opacity: '1' },
+        },
+        slideInRight: {
+          '0%': { transform: 'translateX(14px)', opacity: '0' },
+          '100%': { transform: 'translateX(0)', opacity: '1' },
+        },
+        expandDown: {
+          '0%': { opacity: '0', transform: 'scaleY(0.94) translateY(-4px)' },
+          '100%': { opacity: '1', transform: 'scaleY(1) translateY(0)' },
+        },
+        pageEnter: {
+          '0%': { opacity: '0', transform: 'translateY(8px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
       },
     },
   },
   plugins: [],
 }
-
