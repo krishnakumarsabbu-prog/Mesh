@@ -149,7 +149,7 @@ async def clone_template(
     return _serialize(template)
 
 
-@router.delete("/{template_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{template_id}", status_code=status.HTTP_204_NO_CONTENT, response_model=None)
 async def delete_template(
     template_id: str,
     db: AsyncSession = Depends(get_db),

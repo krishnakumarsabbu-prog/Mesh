@@ -126,7 +126,7 @@ async def update_binding(
     return _serialize_binding(updated)
 
 
-@router.delete("/{binding_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{binding_id}", status_code=status.HTTP_204_NO_CONTENT, response_model=None)
 async def delete_binding(
     project_id: str,
     pc_id: str,

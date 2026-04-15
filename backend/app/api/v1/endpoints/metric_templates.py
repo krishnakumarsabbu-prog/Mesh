@@ -124,7 +124,7 @@ async def update_metric_template(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
-@router.delete("/connector-catalog/{entry_id}/metrics/{template_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/connector-catalog/{entry_id}/metrics/{template_id}", status_code=status.HTTP_204_NO_CONTENT, response_model=None)
 async def delete_metric_template(
     entry_id: str,
     template_id: str,

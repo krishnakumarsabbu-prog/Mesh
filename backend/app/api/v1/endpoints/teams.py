@@ -84,7 +84,7 @@ async def update_team(
     return d
 
 
-@router.delete("/{team_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{team_id}", status_code=status.HTTP_204_NO_CONTENT, response_model=None)
 async def delete_team(
     team_id: str,
     request: Request,
@@ -126,7 +126,7 @@ async def add_member(
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
 
 
-@router.delete("/{team_id}/members/{member_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{team_id}/members/{member_id}", status_code=status.HTTP_204_NO_CONTENT, response_model=None)
 async def remove_member(
     team_id: str,
     member_id: str,
@@ -163,7 +163,7 @@ async def assign_project(
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
 
 
-@router.delete("/{team_id}/projects/{assignment_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{team_id}/projects/{assignment_id}", status_code=status.HTTP_204_NO_CONTENT, response_model=None)
 async def remove_project(
     team_id: str,
     assignment_id: str,

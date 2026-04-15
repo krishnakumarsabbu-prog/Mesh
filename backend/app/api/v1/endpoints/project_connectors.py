@@ -158,7 +158,7 @@ async def test_connector(
     }
 
 
-@router.delete("/{pc_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{pc_id}", status_code=status.HTTP_204_NO_CONTENT, response_model=None)
 async def remove_connector(
     project_id: str,
     pc_id: str,

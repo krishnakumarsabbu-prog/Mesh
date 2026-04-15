@@ -115,7 +115,7 @@ async def test_catalog_entry(
     return result.model_dump()
 
 
-@router.delete("/{entry_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{entry_id}", status_code=status.HTTP_204_NO_CONTENT, response_model=None)
 async def delete_catalog_entry(
     entry_id: str,
     db: AsyncSession = Depends(get_db),

@@ -81,7 +81,7 @@ async def update_lob(
     return lob_data
 
 
-@router.delete("/{lob_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{lob_id}", status_code=status.HTTP_204_NO_CONTENT, response_model=None)
 async def delete_lob(
     lob_id: str,
     request: Request,
@@ -132,7 +132,7 @@ async def assign_lob_admin(
     return d
 
 
-@router.delete("/{lob_id}/admins/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{lob_id}/admins/{user_id}", status_code=status.HTTP_204_NO_CONTENT, response_model=None)
 async def remove_lob_admin(
     lob_id: str,
     user_id: str,

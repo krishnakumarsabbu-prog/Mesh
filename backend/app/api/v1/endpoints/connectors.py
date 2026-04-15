@@ -58,7 +58,7 @@ async def update_connector(connector_id: str, data: ConnectorUpdate, request: Re
     return connector.__dict__
 
 
-@router.delete("/{connector_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{connector_id}", status_code=status.HTTP_204_NO_CONTENT, response_model=None)
 async def delete_connector(connector_id: str, request: Request, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
     if not await connector_service.delete(db, connector_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Connector not found")

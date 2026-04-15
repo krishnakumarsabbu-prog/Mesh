@@ -127,7 +127,7 @@ async def set_default(
     return result
 
 
-@router.delete("/{assignment_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{assignment_id}", status_code=status.HTTP_204_NO_CONTENT, response_model=None)
 async def remove_assignment(
     project_id: str,
     assignment_id: str,
@@ -178,6 +178,7 @@ async def upsert_widget_override(
 @router.delete(
     "/{assignment_id}/widgets/{widget_id}/override",
     status_code=status.HTTP_204_NO_CONTENT,
+    response_model=None,
 )
 async def delete_widget_override(
     project_id: str,

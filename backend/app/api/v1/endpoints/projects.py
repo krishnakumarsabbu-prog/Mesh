@@ -95,7 +95,7 @@ async def update_project(
     return d
 
 
-@router.delete("/{project_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{project_id}", status_code=status.HTTP_204_NO_CONTENT, response_model=None)
 async def delete_project(
     project_id: str,
     request: Request,
@@ -159,7 +159,7 @@ async def update_member(
     return result
 
 
-@router.delete("/{project_id}/members/{member_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{project_id}/members/{member_id}", status_code=status.HTTP_204_NO_CONTENT, response_model=None)
 async def remove_member(
     project_id: str,
     member_id: str,

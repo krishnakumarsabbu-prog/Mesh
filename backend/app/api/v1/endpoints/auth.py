@@ -57,7 +57,7 @@ async def me(current_user: User = Depends(get_current_user)):
     return current_user
 
 
-@router.post("/change-password", status_code=status.HTTP_204_NO_CONTENT)
+@router.post("/change-password", status_code=status.HTTP_204_NO_CONTENT, response_model=None)
 async def change_password(
     data: ChangePasswordRequest,
     request: Request,

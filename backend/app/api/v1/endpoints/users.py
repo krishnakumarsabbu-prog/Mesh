@@ -137,7 +137,7 @@ async def update_user(
     return user
 
 
-@router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT, response_model=None)
 async def deactivate_user(
     user_id: str,
     request: Request,
@@ -196,7 +196,7 @@ async def assign_role(
     return assignment
 
 
-@router.delete("/{user_id}/roles/{assignment_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{user_id}/roles/{assignment_id}", status_code=status.HTTP_204_NO_CONTENT, response_model=None)
 async def remove_role(
     user_id: str,
     assignment_id: str,
