@@ -312,6 +312,25 @@ export const projectConnectorMetricApi = {
     apiClient.delete(`/projects/${projectId}/connectors/${pcId}/metrics/${bindingId}`),
 };
 
+export const dashboardTemplateApi = {
+  list: (params?: { scope?: string; visibility?: string }) =>
+    apiClient.get('/dashboard-templates', { params }),
+  get: (id: string) =>
+    apiClient.get(`/dashboard-templates/${id}`),
+  create: (data: object) =>
+    apiClient.post('/dashboard-templates', data),
+  update: (id: string, data: object) =>
+    apiClient.patch(`/dashboard-templates/${id}`, data),
+  saveLayout: (id: string, data: object) =>
+    apiClient.put(`/dashboard-templates/${id}/layout`, data),
+  clone: (id: string, name: string) =>
+    apiClient.post(`/dashboard-templates/${id}/clone`, { name }),
+  delete: (id: string) =>
+    apiClient.delete(`/dashboard-templates/${id}`),
+  widgetTypes: () =>
+    apiClient.get('/dashboard-templates/meta/widget-types'),
+};
+
 export const healthRulesApi = {
   metadata: () =>
     apiClient.get('/rules/metadata'),

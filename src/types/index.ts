@@ -962,3 +962,100 @@ export interface AnalyticsSlaMetrics {
   connector_sla: ConnectorSlaMetrics[];
   sla_trend: AnalyticsSlaPoint[];
 }
+
+// ─── Dashboard Builder Types ──────────────────────────────────────────────────
+
+export type DashboardScope = 'project' | 'team' | 'lob' | 'global';
+export type DashboardVisibility = 'global' | 'lob' | 'private';
+export type WidgetType =
+  | 'kpi_card' | 'gauge' | 'progress_ring' | 'sparkline'
+  | 'line_chart' | 'area_chart' | 'bar_chart' | 'stacked_bar' | 'pie_donut'
+  | 'sla_card' | 'alert_panel' | 'status_timeline' | 'comparison_grid'
+  | 'table_widget' | 'heatmap' | 'health_distribution';
+export type MetricSourceScope = 'connector_metric' | 'team_aggregate' | 'lob_aggregate' | 'project_aggregate';
+export type AggregationMode = 'latest' | 'avg' | 'sum' | 'min' | 'max' | 'count' | 'p95' | 'p99';
+
+export interface WidgetMetricBinding {
+  id: string;
+  widget_id: string;
+  metric_source_scope: MetricSourceScope;
+  metric_key: string;
+  connector_type?: string | null;
+  aggregation_mode: AggregationMode;
+  display_label?: string | null;
+  color_override?: string | null;
+  sort_order: number;
+}
+
+export interface WidgetMetricBindingCreate {
+  metric_source_scope: MetricSourceScope;
+  metric_key: string;
+  connector_type?: string | null;
+  aggregation_mode: AggregationMode;
+  display_label?: string | null;
+  color_override?: string | null;
+  sort_order: number;
+}
+
+export interface DashboardWidget {
+  id: string;
+  dashboard_template_id: string;
+  widget_type: WidgetType;
+  title: string;
+  subtitle?: string | null;
+  layout_x: number;
+  layout_y: number;
+  width: number;
+  height: number;
+  chart_config?: Record<string, unknown> | null;
+  threshold_config?: Record<string, unknown> | null;
+  display_config?: Record<string, unknown> | null;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+  metric_bindings: WidgetMetricBinding[];
+}
+
+export interface DashboardWidgetCreate {
+  id?: string;
+  widget_type: WidgetType;
+  title: string;
+  subtitle?: string | null;
+  layout_x: number;
+  layout_y: number;
+  width: number;
+  height: number;
+  chart_config?: Record<string, unknown> | null;
+  threshold_config?: Record<string, unknown> | null;
+  display_config?: Record<string, unknown> | null;
+  sort_order: number;
+  metric_bindings: WidgetMetricBindingCreate[];
+}
+
+export interface DashboardTemplate {
+  id: string;
+  name: string;
+  description?: string | null;
+  scope: DashboardScope;
+  category?: string | null;
+  tags?: string | null;
+  visibility: DashboardVisibility;
+  is_default: boolean;
+  version: number;
+  created_by?: string | null;
+  created_at: string;
+  updated_at: string;
+  widgets: DashboardWidget[];
+  widget_count: number;
+}
+
+export interface WidgetTypeMeta {
+  value: WidgetType;
+  label: string;
+  description: string;
+  default_width: number;
+  default_height: number;
+  min_width: number;
+  min_height: number;
+  category: string;
+}

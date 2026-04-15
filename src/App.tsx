@@ -20,6 +20,8 @@ import { TeamsPage } from '@/pages/TeamsPage';
 import { TeamDetailPage } from '@/pages/TeamDetailPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import { AuditLogPage } from '@/pages/AuditLogPage';
+import { DashboardBuilderPage } from '@/pages/DashboardBuilderPage';
+import { DashboardBuilderEditor } from '@/components/dashboard-builder/DashboardBuilderEditor';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { useAuthStore } from '@/store/authStore';
 import { isAdmin } from '@/lib/permissions';
@@ -83,8 +85,17 @@ export default function App() {
             <Route path="rules" element={<ErrorBoundary><RulesPage /></ErrorBoundary>} />
             <Route path="analytics" element={<ErrorBoundary><AnalyticsPage /></ErrorBoundary>} />
             <Route path="projects/:projectId/analytics" element={<ErrorBoundary><AnalyticsPage /></ErrorBoundary>} />
+            <Route path="dashboard-builder" element={<ErrorBoundary><DashboardBuilderPage /></ErrorBoundary>} />
             <Route path="settings" element={<ErrorBoundary><SettingsPage /></ErrorBoundary>} />
           </Route>
+          <Route
+            path="/dashboard-builder/:templateId"
+            element={
+              <RequireAuth>
+                <ErrorBoundary><DashboardBuilderEditor /></ErrorBoundary>
+              </RequireAuth>
+            }
+          />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </BrowserRouter>
