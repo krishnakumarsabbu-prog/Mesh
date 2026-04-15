@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Sun, Moon, Monitor, LayoutGrid, List, Maximize2, Minimize2, Zap, ZapOff, ChevronRight, Home } from 'lucide-react';
+import { Sun, Moon, Monitor, LayoutGrid, List, Maximize2, Minimize2, Zap, ZapOff, ChevronRight, Chrome as Home } from 'lucide-react';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import apiClient from '@/lib/api';
