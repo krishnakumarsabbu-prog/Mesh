@@ -1184,3 +1184,138 @@ export interface LiveDashboardResponse {
   widgets: LiveWidgetData[];
   project_summary?: ProjectDashboardSummary | null;
 }
+
+// ─── Team Dashboard Assignment Types ─────────────────────────────────────────
+
+export interface TeamWidgetOverrideCreate {
+  widget_id: string;
+  is_hidden: boolean;
+  title_override?: string | null;
+  sort_order_override?: number | null;
+  threshold_config_override?: Record<string, unknown> | null;
+  display_config_override?: Record<string, unknown> | null;
+}
+
+export interface TeamWidgetOverrideResponse extends TeamWidgetOverrideCreate {
+  id: string;
+  assignment_id: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TeamAssignmentCreate {
+  template_id: string;
+  display_name?: string | null;
+  is_default?: boolean;
+  refresh_interval_seconds?: number;
+}
+
+export interface TeamAssignmentUpdate {
+  display_name?: string | null;
+  is_default?: boolean;
+  sort_order?: number;
+  refresh_interval_seconds?: number;
+}
+
+export interface TeamAssignmentResponse {
+  id: string;
+  team_id: string;
+  template_id: string;
+  display_name?: string | null;
+  sort_order: number;
+  is_default: boolean;
+  refresh_interval_seconds: number;
+  assigned_by?: string | null;
+  created_at: string;
+  updated_at: string;
+  template_name?: string | null;
+  template_description?: string | null;
+  template_scope?: string | null;
+  template_visibility?: string | null;
+  template_category?: string | null;
+  widget_count: number;
+  overrides: TeamWidgetOverrideResponse[];
+}
+
+export interface TeamAssignmentValidationWarning {
+  widget_id: string;
+  widget_title: string;
+  metric_key: string;
+  message: string;
+}
+
+export interface TeamAssignmentValidationError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown> | null;
+}
+
+export interface TeamAssignmentValidationResult {
+  valid: boolean;
+  errors: TeamAssignmentValidationError[];
+  warnings: TeamAssignmentValidationWarning[];
+  missing_metric_keys: string[];
+  satisfied_bindings: number;
+  total_bindings: number;
+  available_metric_keys: string[];
+}
+
+export interface TeamResolvedMetric {
+  binding_id: string;
+  metric_key: string;
+  label: string;
+  aggregation_mode: AggregationMode;
+  value?: number | null;
+  unit?: string | null;
+  trend: Array<{ t: string; v: number }>;
+  color?: string | null;
+  source: string;
+  last_computed_at?: string | null;
+  note?: string | null;
+}
+
+export interface TeamLiveWidgetData {
+  widget_id: string;
+  widget_type: WidgetType;
+  title: string;
+  subtitle?: string | null;
+  is_hidden: boolean;
+  layout_x: number;
+  layout_y: number;
+  width: number;
+  height: number;
+  sort_order: number;
+  chart_config?: Record<string, unknown> | null;
+  threshold_config?: Record<string, unknown> | null;
+  display_config?: Record<string, unknown> | null;
+  resolved_metrics: TeamResolvedMetric[];
+  has_data: boolean;
+  error?: string | null;
+}
+
+export interface TeamSummary {
+  team_id: string;
+  team_name: string;
+  team_color?: string | null;
+  project_count: number;
+  healthy_projects: number;
+  warning_projects: number;
+  critical_projects: number;
+  avg_project_health: number;
+  total_alerts: number;
+  avg_availability: number;
+  sla_breach_count: number;
+  metrics_computed_at?: string | null;
+}
+
+export interface TeamLiveDashboardResponse {
+  assignment_id: string;
+  team_id: string;
+  template_id: string;
+  dashboard_name: string;
+  template_name: string;
+  refresh_interval_seconds: number;
+  rendered_at: string;
+  widgets: TeamLiveWidgetData[];
+  team_summary?: TeamSummary | null;
+}

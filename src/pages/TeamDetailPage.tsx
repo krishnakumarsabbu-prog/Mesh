@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   Users, FolderOpen, ArrowLeft, Plus, Trash2, Play, RefreshCw,
   Activity, UserPlus, UserMinus,
-  ChevronRight,
+  ChevronRight, LayoutDashboard,
 } from 'lucide-react';
 import { useUIStore } from '@/store/uiStore';
 import { teamApi, projectApi, lobApi, userApi, healthRunApi } from '@/lib/api';
@@ -273,6 +273,15 @@ export function TeamDetailPage() {
             <p className="text-[13px] mt-2 ml-[52px]" style={{ color: 'var(--text-muted)' }}>{team.description}</p>
           )}
         </div>
+
+        <Button
+          icon={<LayoutDashboard className="w-4 h-4" />}
+          onClick={() => navigate(`/teams/${teamId}/dashboards`)}
+          variant="secondary"
+          size="sm"
+        >
+          Dashboards
+        </Button>
 
         {canManage && teamProjects.length > 0 && (
           <Button

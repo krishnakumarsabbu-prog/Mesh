@@ -358,6 +358,31 @@ export const projectDashboardAssignmentApi = {
     apiClient.delete(`/projects/${projectId}/dashboards/${assignmentId}/widgets/${widgetId}/override`),
 };
 
+export const teamDashboardAssignmentApi = {
+  list: (teamId: string) =>
+    apiClient.get(`/teams/${teamId}/dashboards`),
+  assign: (teamId: string, data: object) =>
+    apiClient.post(`/teams/${teamId}/dashboards`, data),
+  get: (teamId: string, assignmentId: string) =>
+    apiClient.get(`/teams/${teamId}/dashboards/${assignmentId}`),
+  update: (teamId: string, assignmentId: string, data: object) =>
+    apiClient.patch(`/teams/${teamId}/dashboards/${assignmentId}`, data),
+  setDefault: (teamId: string, assignmentId: string) =>
+    apiClient.post(`/teams/${teamId}/dashboards/${assignmentId}/set-default`),
+  remove: (teamId: string, assignmentId: string) =>
+    apiClient.delete(`/teams/${teamId}/dashboards/${assignmentId}`),
+  reorder: (teamId: string, orderedIds: string[]) =>
+    apiClient.post(`/teams/${teamId}/dashboards/reorder`, { ordered_assignment_ids: orderedIds }),
+  validate: (teamId: string, templateId: string) =>
+    apiClient.get(`/teams/${teamId}/dashboards/validate/${templateId}`),
+  render: (teamId: string, assignmentId: string) =>
+    apiClient.get(`/teams/${teamId}/dashboards/${assignmentId}/render`),
+  upsertWidgetOverride: (teamId: string, assignmentId: string, widgetId: string, data: object) =>
+    apiClient.put(`/teams/${teamId}/dashboards/${assignmentId}/widgets/${widgetId}/override`, data),
+  deleteWidgetOverride: (teamId: string, assignmentId: string, widgetId: string) =>
+    apiClient.delete(`/teams/${teamId}/dashboards/${assignmentId}/widgets/${widgetId}/override`),
+};
+
 export const healthRulesApi = {
   metadata: () =>
     apiClient.get('/rules/metadata'),
