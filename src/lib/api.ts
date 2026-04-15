@@ -383,6 +383,31 @@ export const teamDashboardAssignmentApi = {
     apiClient.delete(`/teams/${teamId}/dashboards/${assignmentId}/widgets/${widgetId}/override`),
 };
 
+export const lobDashboardAssignmentApi = {
+  list: (lobId: string) =>
+    apiClient.get(`/lobs/${lobId}/dashboards`),
+  assign: (lobId: string, data: object) =>
+    apiClient.post(`/lobs/${lobId}/dashboards`, data),
+  get: (lobId: string, assignmentId: string) =>
+    apiClient.get(`/lobs/${lobId}/dashboards/${assignmentId}`),
+  update: (lobId: string, assignmentId: string, data: object) =>
+    apiClient.patch(`/lobs/${lobId}/dashboards/${assignmentId}`, data),
+  setDefault: (lobId: string, assignmentId: string) =>
+    apiClient.post(`/lobs/${lobId}/dashboards/${assignmentId}/set-default`),
+  remove: (lobId: string, assignmentId: string) =>
+    apiClient.delete(`/lobs/${lobId}/dashboards/${assignmentId}`),
+  reorder: (lobId: string, orderedIds: string[]) =>
+    apiClient.post(`/lobs/${lobId}/dashboards/reorder`, { ordered_assignment_ids: orderedIds }),
+  validate: (lobId: string, templateId: string) =>
+    apiClient.get(`/lobs/${lobId}/dashboards/validate/${templateId}`),
+  render: (lobId: string, assignmentId: string) =>
+    apiClient.get(`/lobs/${lobId}/dashboards/${assignmentId}/render`),
+  upsertWidgetOverride: (lobId: string, assignmentId: string, widgetId: string, data: object) =>
+    apiClient.put(`/lobs/${lobId}/dashboards/${assignmentId}/widgets/${widgetId}/override`, data),
+  deleteWidgetOverride: (lobId: string, assignmentId: string, widgetId: string) =>
+    apiClient.delete(`/lobs/${lobId}/dashboards/${assignmentId}/widgets/${widgetId}/override`),
+};
+
 export const healthRulesApi = {
   metadata: () =>
     apiClient.get('/rules/metadata'),

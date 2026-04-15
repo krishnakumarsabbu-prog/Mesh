@@ -20,6 +20,8 @@ import { TeamsPage } from '@/pages/TeamsPage';
 import { TeamDetailPage } from '@/pages/TeamDetailPage';
 import { TeamDashboardsPage } from '@/pages/TeamDashboardsPage';
 import { TeamLiveDashboardPage } from '@/pages/TeamLiveDashboardPage';
+import { LobDashboardsPage } from '@/pages/LobDashboardsPage';
+import { LobLiveDashboardPage } from '@/pages/LobLiveDashboardPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import { AuditLogPage } from '@/pages/AuditLogPage';
 import { DashboardBuilderPage } from '@/pages/DashboardBuilderPage';
@@ -61,6 +63,8 @@ export default function App() {
             <Route path="dashboard" element={<ErrorBoundary><DashboardPage /></ErrorBoundary>} />
             <Route path="lobs" element={<ErrorBoundary><LobsPage /></ErrorBoundary>} />
             <Route path="lobs/:lobId" element={<ErrorBoundary><LobDetailPage /></ErrorBoundary>} />
+            <Route path="lobs/:lobId/dashboards" element={<ErrorBoundary><LobDashboardsPage /></ErrorBoundary>} />
+            <Route path="lobs/:lobId/dashboards/:assignmentId" element={<ErrorBoundary><LobLiveDashboardPage /></ErrorBoundary>} />
             <Route path="teams" element={<ErrorBoundary><TeamsPage /></ErrorBoundary>} />
             <Route path="teams/:teamId" element={<ErrorBoundary><TeamDetailPage /></ErrorBoundary>} />
             <Route path="teams/:teamId/dashboards" element={<ErrorBoundary><TeamDashboardsPage /></ErrorBoundary>} />

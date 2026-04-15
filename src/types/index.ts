@@ -1319,3 +1319,150 @@ export interface TeamLiveDashboardResponse {
   widgets: TeamLiveWidgetData[];
   team_summary?: TeamSummary | null;
 }
+
+// ─── LOB Dashboard Assignment Types ──────────────────────────────────────────
+
+export interface LobWidgetOverrideCreate {
+  widget_id: string;
+  is_hidden: boolean;
+  title_override?: string | null;
+  sort_order_override?: number | null;
+  threshold_config_override?: Record<string, unknown> | null;
+  display_config_override?: Record<string, unknown> | null;
+}
+
+export interface LobWidgetOverrideResponse extends LobWidgetOverrideCreate {
+  id: string;
+  assignment_id: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface LobAssignmentCreate {
+  template_id: string;
+  display_name?: string | null;
+  is_default?: boolean;
+  refresh_interval_seconds?: number;
+}
+
+export interface LobAssignmentUpdate {
+  display_name?: string | null;
+  is_default?: boolean;
+  sort_order?: number;
+  refresh_interval_seconds?: number;
+}
+
+export interface LobAssignmentResponse {
+  id: string;
+  lob_id: string;
+  template_id: string;
+  display_name?: string | null;
+  sort_order: number;
+  is_default: boolean;
+  refresh_interval_seconds: number;
+  assigned_by?: string | null;
+  created_at: string;
+  updated_at: string;
+  template_name?: string | null;
+  template_description?: string | null;
+  template_scope?: string | null;
+  template_visibility?: string | null;
+  template_category?: string | null;
+  widget_count: number;
+  overrides: LobWidgetOverrideResponse[];
+}
+
+export interface LobAssignmentValidationWarning {
+  widget_id: string;
+  widget_title: string;
+  metric_key: string;
+  message: string;
+}
+
+export interface LobAssignmentValidationError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown> | null;
+}
+
+export interface LobAssignmentValidationResult {
+  valid: boolean;
+  errors: LobAssignmentValidationError[];
+  warnings: LobAssignmentValidationWarning[];
+  missing_metric_keys: string[];
+  satisfied_bindings: number;
+  total_bindings: number;
+  available_metric_keys: string[];
+}
+
+export interface LobResolvedMetric {
+  binding_id: string;
+  metric_key: string;
+  label: string;
+  aggregation_mode: AggregationMode;
+  value?: number | null;
+  unit?: string | null;
+  trend: Array<{ t: string; v: number }>;
+  color?: string | null;
+  source: string;
+  last_computed_at?: string | null;
+  note?: string | null;
+}
+
+export interface LobLiveWidgetData {
+  widget_id: string;
+  widget_type: WidgetType;
+  title: string;
+  subtitle?: string | null;
+  is_hidden: boolean;
+  layout_x: number;
+  layout_y: number;
+  width: number;
+  height: number;
+  sort_order: number;
+  chart_config?: Record<string, unknown> | null;
+  threshold_config?: Record<string, unknown> | null;
+  display_config?: Record<string, unknown> | null;
+  resolved_metrics: LobResolvedMetric[];
+  has_data: boolean;
+  error?: string | null;
+}
+
+export interface LobPortfolioSummary {
+  lob_id: string;
+  lob_name: string;
+  lob_color?: string | null;
+  team_count: number;
+  total_projects: number;
+  critical_projects_count: number;
+  critical_teams_count: number;
+  avg_team_health: number;
+  avg_project_health: number;
+  portfolio_availability: number;
+  total_incidents: number;
+  sla_breach_rate: number;
+  metrics_computed_at?: string | null;
+}
+
+export interface LobLiveDashboardResponse {
+  assignment_id: string;
+  lob_id: string;
+  template_id: string;
+  dashboard_name: string;
+  template_name: string;
+  refresh_interval_seconds: number;
+  rendered_at: string;
+  widgets: LobLiveWidgetData[];
+  portfolio_summary?: LobPortfolioSummary | null;
+}
+
+// ─── LOB Aggregate Metric ─────────────────────────────────────────────────────
+
+export interface LobAggregateMetric {
+  lob_id: string;
+  metric_key: string;
+  numeric_value?: number | null;
+  string_value?: string | null;
+  compute_window_hours: number;
+  last_computed_at: string;
+}
