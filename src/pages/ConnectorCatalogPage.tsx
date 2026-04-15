@@ -11,6 +11,7 @@ import { notify } from '@/store/notificationStore';
 import { CatalogConnectorCard } from '@/components/catalog/CatalogConnectorCard';
 import { CatalogCreateEditModal } from '@/components/catalog/CatalogCreateEditModal';
 import { CatalogTestModal } from '@/components/catalog/CatalogTestModal';
+import { ConnectorDetailPanel } from '@/components/catalog/ConnectorDetailPanel';
 
 const CATEGORY_OPTIONS = [
   { value: '', label: 'All Categories' },
@@ -36,6 +37,7 @@ export function ConnectorCatalogPage() {
   const [showEnabledOnly, setShowEnabledOnly] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
+  const [selectedEntry, setSelectedEntry] = useState<ConnectorCatalogEntry | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<ConnectorCatalogEntry | null>(null);
   const [testTarget, setTestTarget] = useState<ConnectorCatalogEntry | null>(null);
@@ -53,7 +55,12 @@ export function ConnectorCatalogPage() {
     setLoading(true);
     try {
       const res = await catalogApi.list();
-      setEntries(res.data);
+      const data = res.data as ConnectorCatalogEntry[];
+      setEntries(data);
+      if (selectedEntry) {
+        const updated = data.find((e) => e.id === selectedEntry.id);
+        if (updated) setSelectedEntry(updated);
+      }
     } catch {
       notify.error('Failed to load connector catalog');
     } finally {
@@ -85,6 +92,7 @@ export function ConnectorCatalogPage() {
     try {
       await catalogApi.delete(deleteTarget.id);
       notify.success('Connector deleted from catalog');
+      if (selectedEntry?.id === deleteTarget.id) setSelectedEntry(null);
       setDeleteTarget(null);
       fetchEntries();
     } catch {
@@ -92,6 +100,10 @@ export function ConnectorCatalogPage() {
     } finally {
       setDeleting(false);
     }
+  };
+
+  const handleCardClick = (entry: ConnectorCatalogEntry) => {
+    setSelectedEntry((prev) => (prev?.id === entry.id ? null : entry));
   };
 
   const filtered = useMemo(() => {
@@ -137,6 +149,27 @@ export function ConnectorCatalogPage() {
     custom: 'Custom',
   };
 
+  const renderGrid = (items: ConnectorCatalogEntry[]) => (
+    <div className={`grid gap-4 ${viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
+      {items.map((entry) => (
+        <div
+          key={entry.id}
+          onClick={() => handleCardClick(entry)}
+          className={`cursor-pointer transition-all ${selectedEntry?.id === entry.id ? 'ring-2 ring-primary-400 rounded-2xl' : ''}`}
+        >
+          <CatalogConnectorCard
+            entry={entry}
+            canManage={canManage}
+            onToggle={handleToggle}
+            onEdit={setEditTarget}
+            onTest={setTestTarget}
+            onDelete={setDeleteTarget}
+          />
+        </div>
+      ))}
+    </div>
+  );
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-start justify-between gap-4">
@@ -162,7 +195,7 @@ export function ConnectorCatalogPage() {
         <StatCard label="Total Connectors" value={stats.total} color="#2563EB" />
         <StatCard label="Enabled" value={stats.enabled} color="#059669" />
         <StatCard label="System Built-in" value={stats.system} color="#F46800" />
-        <StatCard label="Custom" value={stats.custom} color="#7C3AED" />
+        <StatCard label="Custom" value={stats.custom} color="#0891B2" />
       </div>
 
       <div className="glass-card rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center gap-3">
@@ -219,86 +252,93 @@ export function ConnectorCatalogPage() {
         </div>
       </div>
 
-      {loading ? (
-        <div className={`grid gap-4 ${viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="glass-card rounded-2xl p-5 h-48 animate-pulse">
-              <div className="flex gap-3 mb-4">
-                <div className="w-14 h-14 rounded-2xl bg-neutral-100" />
-                <div className="flex-1 space-y-2 pt-1">
-                  <div className="h-4 bg-neutral-100 rounded w-2/3" />
-                  <div className="h-3 bg-neutral-100 rounded w-1/2" />
+      {selectedEntry && (
+        <div className="text-xs text-neutral-500 bg-primary-50 border border-primary-100 rounded-xl px-4 py-2.5 flex items-center gap-2">
+          <span className="font-semibold text-primary-600">{selectedEntry.name}</span>
+          <span>is selected — view details and metric templates in the panel on the right.</span>
+          <button
+            onClick={() => setSelectedEntry(null)}
+            className="ml-auto text-neutral-400 hover:text-neutral-600 transition-colors text-xs font-medium"
+          >
+            Deselect
+          </button>
+        </div>
+      )}
+
+      <div className={`flex gap-6 ${selectedEntry ? 'items-start' : ''}`}>
+        <div className={`flex-1 min-w-0 space-y-6 ${selectedEntry ? 'xl:max-w-[calc(100%-27rem)]' : ''}`}>
+          {loading ? (
+            <div className={`grid gap-4 ${viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="glass-card rounded-2xl p-5 h-48 animate-pulse">
+                  <div className="flex gap-3 mb-4">
+                    <div className="w-14 h-14 rounded-2xl bg-neutral-100" />
+                    <div className="flex-1 space-y-2 pt-1">
+                      <div className="h-4 bg-neutral-100 rounded w-2/3" />
+                      <div className="h-3 bg-neutral-100 rounded w-1/2" />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="h-3 bg-neutral-100 rounded" />
+                    <div className="h-3 bg-neutral-100 rounded w-4/5" />
+                  </div>
                 </div>
+              ))}
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="glass-card rounded-2xl p-16 flex flex-col items-center justify-center text-center">
+              <Library className="w-12 h-12 text-neutral-200 mb-4" />
+              <p className="text-sm font-semibold text-neutral-400">No connectors found</p>
+              <p className="text-xs text-neutral-300 mt-1">Try adjusting your search or filter criteria</p>
+            </div>
+          ) : categoryGroups && !search && !category ? (
+            <div className="space-y-8">
+              {Object.entries(categoryGroups).map(([cat, items]) => (
+                <div key={cat}>
+                  <div className="flex items-center gap-3 mb-4">
+                    <h3 className="text-sm font-bold text-neutral-700">{CATEGORY_LABELS[cat] || cat}</h3>
+                    <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-400 border border-neutral-200">
+                      {items.length}
+                    </span>
+                    <div className="flex-1 h-px bg-neutral-100" />
+                  </div>
+                  {renderGrid(items)}
+                </div>
+              ))}
+            </div>
+          ) : (
+            renderGrid(filtered)
+          )}
+
+          {!canManage && (
+            <div className="glass-card rounded-2xl p-4 flex items-center gap-3 border border-amber-100 bg-amber-50/50">
+              <div className="w-8 h-8 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0">
+                <Library className="w-4 h-4 text-amber-600" />
               </div>
-              <div className="space-y-2">
-                <div className="h-3 bg-neutral-100 rounded" />
-                <div className="h-3 bg-neutral-100 rounded w-4/5" />
+              <div>
+                <p className="text-sm font-semibold text-amber-700">Read-only access</p>
+                <p className="text-xs text-amber-600 mt-0.5">
+                  Only Super Admins and LOB Admins can manage the connector catalog. Contact your administrator to add or modify connectors.
+                </p>
               </div>
             </div>
-          ))}
+          )}
         </div>
-      ) : filtered.length === 0 ? (
-        <div className="glass-card rounded-2xl p-16 flex flex-col items-center justify-center text-center">
-          <Library className="w-12 h-12 text-neutral-200 mb-4" />
-          <p className="text-sm font-semibold text-neutral-400">No connectors found</p>
-          <p className="text-xs text-neutral-300 mt-1">Try adjusting your search or filter criteria</p>
-        </div>
-      ) : categoryGroups && !search && !category ? (
-        <div className="space-y-8">
-          {Object.entries(categoryGroups).map(([cat, items]) => (
-            <div key={cat}>
-              <div className="flex items-center gap-3 mb-4">
-                <h3 className="text-sm font-bold text-neutral-700">{CATEGORY_LABELS[cat] || cat}</h3>
-                <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-400 border border-neutral-200">
-                  {items.length}
-                </span>
-                <div className="flex-1 h-px bg-neutral-100" />
-              </div>
-              <div className={`grid gap-4 ${viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
-                {items.map((entry) => (
-                  <CatalogConnectorCard
-                    key={entry.id}
-                    entry={entry}
-                    canManage={canManage}
-                    onToggle={handleToggle}
-                    onEdit={setEditTarget}
-                    onTest={setTestTarget}
-                    onDelete={setDeleteTarget}
-                  />
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className={`grid gap-4 ${viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
-          {filtered.map((entry) => (
-            <CatalogConnectorCard
-              key={entry.id}
-              entry={entry}
+
+        {selectedEntry && (
+          <div className="w-[26rem] flex-shrink-0 glass-card rounded-2xl overflow-hidden sticky top-6 max-h-[calc(100vh-8rem)] flex flex-col">
+            <ConnectorDetailPanel
+              entry={selectedEntry}
               canManage={canManage}
+              onClose={() => setSelectedEntry(null)}
               onToggle={handleToggle}
               onEdit={setEditTarget}
               onTest={setTestTarget}
               onDelete={setDeleteTarget}
             />
-          ))}
-        </div>
-      )}
-
-      {!canManage && (
-        <div className="glass-card rounded-2xl p-4 flex items-center gap-3 border border-amber-100 bg-amber-50/50">
-          <div className="w-8 h-8 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0">
-            <Library className="w-4 h-4 text-amber-600" />
           </div>
-          <div>
-            <p className="text-sm font-semibold text-amber-700">Read-only access</p>
-            <p className="text-xs text-amber-600 mt-0.5">
-              Only Super Admins and LOB Admins can manage the connector catalog. Contact your administrator to add or modify connectors.
-            </p>
-          </div>
-        </div>
-      )}
+        )}
+      </div>
 
       <CatalogCreateEditModal
         open={createOpen || !!editTarget}

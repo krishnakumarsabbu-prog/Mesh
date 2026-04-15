@@ -276,6 +276,29 @@ export const teamApi = {
   removeProject: (id: string, assignmentId: string) => apiClient.delete(`/teams/${id}/projects/${assignmentId}`),
 };
 
+export const metricTemplateApi = {
+  list: (catalogEntryId: string, params?: { category?: string; enabled_only?: boolean }) =>
+    apiClient.get(`/connector-catalog/${catalogEntryId}/metrics`, { params }),
+  create: (catalogEntryId: string, data: object) =>
+    apiClient.post(`/connector-catalog/${catalogEntryId}/metrics`, data),
+  get: (catalogEntryId: string, templateId: string) =>
+    apiClient.get(`/connector-catalog/${catalogEntryId}/metrics/${templateId}`),
+  update: (catalogEntryId: string, templateId: string, data: object) =>
+    apiClient.patch(`/connector-catalog/${catalogEntryId}/metrics/${templateId}`, data),
+  delete: (catalogEntryId: string, templateId: string) =>
+    apiClient.delete(`/connector-catalog/${catalogEntryId}/metrics/${templateId}`),
+  clone: (catalogEntryId: string, templateId: string, data: object) =>
+    apiClient.post(`/connector-catalog/${catalogEntryId}/metrics/${templateId}/clone`, data),
+  enable: (catalogEntryId: string, templateId: string) =>
+    apiClient.post(`/connector-catalog/${catalogEntryId}/metrics/${templateId}/enable`),
+  disable: (catalogEntryId: string, templateId: string) =>
+    apiClient.post(`/connector-catalog/${catalogEntryId}/metrics/${templateId}/disable`),
+  reorder: (catalogEntryId: string, orderedIds: string[]) =>
+    apiClient.post(`/connector-catalog/${catalogEntryId}/metrics/reorder`, { ordered_ids: orderedIds }),
+  test: (catalogEntryId: string, templateId: string, data: object) =>
+    apiClient.post(`/connector-catalog/${catalogEntryId}/metrics/${templateId}/test`, data),
+};
+
 export const healthRulesApi = {
   metadata: () =>
     apiClient.get('/rules/metadata'),

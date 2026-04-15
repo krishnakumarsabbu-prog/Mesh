@@ -270,6 +270,65 @@ export interface ConnectorCatalogTestResult {
   details?: Record<string, unknown>;
 }
 
+export type MetricType = 'number' | 'percentage' | 'time_series' | 'table' | 'status' | 'boolean' | 'duration';
+export type AggregationType = 'sum' | 'avg' | 'max' | 'min' | 'count' | 'latest';
+export type ParserType = 'json_path' | 'regex' | 'xml_path' | 'csv' | 'plain_text' | 'custom';
+
+export interface MetricTemplate {
+  id: string;
+  catalog_entry_id: string;
+  name: string;
+  metric_key: string;
+  description?: string;
+  category?: string;
+  display_order: number;
+  metric_type: MetricType;
+  unit?: string;
+  aggregation_type: AggregationType;
+  threshold_warning?: number | null;
+  threshold_critical?: number | null;
+  query_config?: Record<string, unknown> | null;
+  parser_type: ParserType;
+  result_mapping?: Record<string, unknown> | null;
+  transformation_rules?: Array<Record<string, unknown>> | null;
+  is_enabled_by_default: boolean;
+  is_required: boolean;
+  is_custom: boolean;
+  created_by?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MetricTemplateCreatePayload {
+  name: string;
+  metric_key: string;
+  description?: string;
+  category?: string;
+  display_order?: number;
+  metric_type?: MetricType;
+  unit?: string;
+  aggregation_type?: AggregationType;
+  threshold_warning?: number | null;
+  threshold_critical?: number | null;
+  query_config?: Record<string, unknown> | null;
+  parser_type?: ParserType;
+  result_mapping?: Record<string, unknown> | null;
+  transformation_rules?: Array<Record<string, unknown>> | null;
+  is_enabled_by_default?: boolean;
+  is_required?: boolean;
+  is_custom?: boolean;
+}
+
+export interface MetricTemplateTestResult {
+  success: boolean;
+  raw_response?: unknown;
+  parsed_value?: unknown;
+  error?: string;
+  response_time_ms?: number;
+  status_code?: number;
+  validation_errors?: string[] | null;
+}
+
 export type ProjectConnectorStatus = 'configured' | 'unconfigured' | 'testing' | 'error';
 
 export interface ProjectConnectorCatalogSnippet {
