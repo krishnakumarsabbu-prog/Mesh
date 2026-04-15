@@ -22,6 +22,8 @@ import { NotFoundPage } from '@/pages/NotFoundPage';
 import { AuditLogPage } from '@/pages/AuditLogPage';
 import { DashboardBuilderPage } from '@/pages/DashboardBuilderPage';
 import { DashboardBuilderEditor } from '@/components/dashboard-builder/DashboardBuilderEditor';
+import { ProjectDashboardsPage } from '@/pages/ProjectDashboardsPage';
+import { LiveDashboardPage } from '@/pages/LiveDashboardPage';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { useAuthStore } from '@/store/authStore';
 import { isAdmin } from '@/lib/permissions';
@@ -62,6 +64,8 @@ export default function App() {
             <Route path="projects" element={<ErrorBoundary><ProjectsPage /></ErrorBoundary>} />
             <Route path="projects/:projectId" element={<ErrorBoundary><ProjectDetailPage /></ErrorBoundary>} />
             <Route path="projects/:projectId/health-dashboard" element={<ErrorBoundary><ProjectHealthDashboardPage /></ErrorBoundary>} />
+            <Route path="projects/:projectId/dashboards" element={<ErrorBoundary><ProjectDashboardsPage /></ErrorBoundary>} />
+            <Route path="projects/:projectId/dashboards/:assignmentId" element={<ErrorBoundary><LiveDashboardPage /></ErrorBoundary>} />
             <Route path="connectors" element={<ErrorBoundary><ConnectorsPage /></ErrorBoundary>} />
             <Route path="connector-catalog" element={<ErrorBoundary><ConnectorCatalogPage /></ErrorBoundary>} />
             <Route path="health" element={<ErrorBoundary><HealthPage /></ErrorBoundary>} />

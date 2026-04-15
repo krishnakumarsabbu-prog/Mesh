@@ -331,6 +331,33 @@ export const dashboardTemplateApi = {
     apiClient.get('/dashboard-templates/meta/widget-types'),
 };
 
+export const projectDashboardAssignmentApi = {
+  list: (projectId: string) =>
+    apiClient.get(`/projects/${projectId}/dashboards`),
+  assign: (projectId: string, data: object) =>
+    apiClient.post(`/projects/${projectId}/dashboards`, data),
+  get: (projectId: string, assignmentId: string) =>
+    apiClient.get(`/projects/${projectId}/dashboards/${assignmentId}`),
+  update: (projectId: string, assignmentId: string, data: object) =>
+    apiClient.patch(`/projects/${projectId}/dashboards/${assignmentId}`, data),
+  setDefault: (projectId: string, assignmentId: string) =>
+    apiClient.post(`/projects/${projectId}/dashboards/${assignmentId}/set-default`),
+  remove: (projectId: string, assignmentId: string) =>
+    apiClient.delete(`/projects/${projectId}/dashboards/${assignmentId}`),
+  reorder: (projectId: string, orderedIds: string[]) =>
+    apiClient.post(`/projects/${projectId}/dashboards/reorder`, { ordered_assignment_ids: orderedIds }),
+  validate: (projectId: string, templateId: string) =>
+    apiClient.get(`/projects/${projectId}/dashboards/validate/${templateId}`),
+  render: (projectId: string, assignmentId: string, timeRangeHours?: number) =>
+    apiClient.get(`/projects/${projectId}/dashboards/${assignmentId}/render`, {
+      params: timeRangeHours ? { time_range_hours: timeRangeHours } : undefined,
+    }),
+  upsertWidgetOverride: (projectId: string, assignmentId: string, widgetId: string, data: object) =>
+    apiClient.put(`/projects/${projectId}/dashboards/${assignmentId}/widgets/${widgetId}/override`, data),
+  deleteWidgetOverride: (projectId: string, assignmentId: string, widgetId: string) =>
+    apiClient.delete(`/projects/${projectId}/dashboards/${assignmentId}/widgets/${widgetId}/override`),
+};
+
 export const healthRulesApi = {
   metadata: () =>
     apiClient.get('/rules/metadata'),

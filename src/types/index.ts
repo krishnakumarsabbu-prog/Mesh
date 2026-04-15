@@ -1059,3 +1059,128 @@ export interface WidgetTypeMeta {
   min_height: number;
   category: string;
 }
+
+// ─── Project Dashboard Assignment Types ───────────────────────────────────────
+
+export interface WidgetOverrideCreate {
+  widget_id: string;
+  is_hidden: boolean;
+  title_override?: string | null;
+  sort_order_override?: number | null;
+  threshold_config_override?: Record<string, unknown> | null;
+  display_config_override?: Record<string, unknown> | null;
+}
+
+export interface WidgetOverrideResponse extends WidgetOverrideCreate {
+  id: string;
+  assignment_id: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AssignmentCreate {
+  template_id: string;
+  display_name?: string | null;
+  is_default?: boolean;
+  refresh_interval_seconds?: number;
+}
+
+export interface AssignmentUpdate {
+  display_name?: string | null;
+  is_default?: boolean;
+  sort_order?: number;
+  refresh_interval_seconds?: number;
+}
+
+export interface AssignmentResponse {
+  id: string;
+  project_id: string;
+  template_id: string;
+  display_name?: string | null;
+  sort_order: number;
+  is_default: boolean;
+  refresh_interval_seconds: number;
+  assigned_by?: string | null;
+  created_at: string;
+  updated_at: string;
+  template_name?: string | null;
+  template_description?: string | null;
+  template_scope?: string | null;
+  template_visibility?: string | null;
+  template_category?: string | null;
+  widget_count: number;
+  overrides: WidgetOverrideResponse[];
+}
+
+export interface ValidationWarning {
+  widget_id: string;
+  widget_title: string;
+  metric_key: string;
+  connector_type?: string | null;
+  message: string;
+}
+
+export interface AssignmentValidationError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown> | null;
+}
+
+export interface AssignmentValidationResult {
+  valid: boolean;
+  errors: AssignmentValidationError[];
+  warnings: ValidationWarning[];
+  missing_connector_types: string[];
+  missing_metric_keys: string[];
+  satisfied_bindings: number;
+  total_bindings: number;
+}
+
+export interface ResolvedMetric {
+  binding_id: string;
+  metric_key: string;
+  label: string;
+  connector?: string | null;
+  connector_type?: string | null;
+  aggregation_mode: AggregationMode;
+  value?: number | null;
+  latest_value?: number | null;
+  avg_value?: number | null;
+  min_value?: number | null;
+  max_value?: number | null;
+  unit?: string | null;
+  trend: Array<{ t: string; v: number }>;
+  color?: string | null;
+  description?: string | null;
+}
+
+export interface LiveWidgetData {
+  widget_id: string;
+  widget_type: WidgetType;
+  title: string;
+  subtitle?: string | null;
+  is_hidden: boolean;
+  layout_x: number;
+  layout_y: number;
+  width: number;
+  height: number;
+  sort_order: number;
+  chart_config?: Record<string, unknown> | null;
+  threshold_config?: Record<string, unknown> | null;
+  display_config?: Record<string, unknown> | null;
+  resolved_metrics: ResolvedMetric[];
+  has_data: boolean;
+  error?: string | null;
+}
+
+export interface LiveDashboardResponse {
+  assignment_id: string;
+  project_id: string;
+  template_id: string;
+  dashboard_name: string;
+  template_name: string;
+  refresh_interval_seconds: number;
+  rendered_at: string;
+  widgets: LiveWidgetData[];
+  project_summary?: ProjectDashboardSummary | null;
+}

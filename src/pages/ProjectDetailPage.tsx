@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FolderOpen, Plug, CircleCheck as CheckCircle, TriangleAlert as AlertTriangle, CircleAlert as AlertCircle, ArrowLeft, Users, Plus, Trash2, Pencil, Settings, ChartBar as BarChart2 } from 'lucide-react';
+import { FolderOpen, Plug, CircleCheck as CheckCircle, TriangleAlert as AlertTriangle, CircleAlert as AlertCircle, ArrowLeft, Users, Plus, Trash2, Pencil, Settings, ChartBar as BarChart2, LayoutDashboard } from 'lucide-react';
 import { useUIStore } from '@/store/uiStore';
 import { projectApi, userApi, lobApi } from '@/lib/api';
 import { Project, ProjectMember, User, Lob } from '@/types';
@@ -215,6 +215,14 @@ export function ProjectDetailPage() {
             </div>
           </div>
         </div>
+        <Button
+          variant="secondary"
+          size="sm"
+          icon={<LayoutDashboard className="w-3.5 h-3.5" />}
+          onClick={() => navigate(`/projects/${project.id}/dashboards`)}
+        >
+          Dashboards
+        </Button>
         <Button
           variant="primary"
           size="sm"
