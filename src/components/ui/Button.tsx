@@ -20,8 +20,6 @@ export function Button({
   children,
   disabled,
   style,
-  onMouseEnter,
-  onMouseLeave,
   ...props
 }: ButtonProps) {
   const sizes = {
@@ -31,54 +29,16 @@ export function Button({
     lg: 'px-5 py-2.5 text-base gap-2 rounded-xl',
   };
 
-  const isPrimary = variant === 'primary' || variant === 'success';
-  const isSecondary = variant === 'secondary';
-  const isGhost = variant === 'ghost';
-  const isDanger = variant === 'danger';
-
-  const baseStyle: React.CSSProperties = isPrimary
-    ? { background: 'linear-gradient(135deg, #00E599 0%, #00C97F 100%)', boxShadow: '0 2px 12px rgba(0,229,153,0.25)', color: '#0F1115' }
-    : isSecondary
-    ? { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.10)', color: '#98A2B3' }
-    : isGhost
-    ? { color: '#98A2B3' }
-    : isDanger
-    ? { background: '#EF4444', border: '1px solid rgba(239,68,68,0.8)', color: '#fff' }
-    : {};
-
-  function handleMouseEnter(e: React.MouseEvent<HTMLButtonElement>) {
-    const el = e.currentTarget as HTMLElement;
-    if (isPrimary) {
-      el.style.boxShadow = '0 4px 20px rgba(0,229,153,0.4)';
-      el.style.transform = 'translateY(-1px)';
-    } else if (isSecondary) {
-      el.style.background = 'rgba(255,255,255,0.07)';
-      el.style.color = '#E6EAF0';
-    } else if (isGhost) {
-      el.style.background = 'rgba(255,255,255,0.06)';
-      el.style.color = '#E6EAF0';
-    } else if (isDanger) {
-      el.style.background = '#DC2626';
-    }
-    onMouseEnter?.(e);
-  }
-
-  function handleMouseLeave(e: React.MouseEvent<HTMLButtonElement>) {
-    const el = e.currentTarget as HTMLElement;
-    if (isPrimary) {
-      el.style.boxShadow = '0 2px 12px rgba(0,229,153,0.25)';
-      el.style.transform = '';
-    } else if (isSecondary) {
-      el.style.background = 'rgba(255,255,255,0.04)';
-      el.style.color = '#98A2B3';
-    } else if (isGhost) {
-      el.style.background = '';
-      el.style.color = '#98A2B3';
-    } else if (isDanger) {
-      el.style.background = '#EF4444';
-    }
-    onMouseLeave?.(e);
-  }
+  const variantClass =
+    variant === 'primary' || variant === 'success'
+      ? 'hm-btn-primary'
+      : variant === 'secondary'
+      ? 'hm-btn-secondary'
+      : variant === 'ghost'
+      ? 'hm-btn-ghost'
+      : variant === 'danger'
+      ? 'hm-btn-danger'
+      : '';
 
   return (
     <button
@@ -86,13 +46,13 @@ export function Button({
         'inline-flex items-center justify-center font-semibold',
         'transition-all duration-150',
         'disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none',
-        'focus:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(0,229,153,0.4)] focus-visible:ring-offset-1 focus-visible:ring-offset-[#0F1115]',
+        'focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1',
+        'hm-btn-focus',
         sizes[size],
+        variantClass,
         className
       )}
-      style={{ ...baseStyle, ...style }}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
+      style={style}
       disabled={disabled || loading}
       {...props}
     >

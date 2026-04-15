@@ -63,7 +63,7 @@ export function Dropdown({ trigger, items, align = 'left', className, width = 'm
             if (item.divider) {
               return (
                 <div
-                  key={i}
+                  key={`divider-${i}`}
                   className="my-1.5 mx-3"
                   style={{ borderTop: '1px solid var(--app-border)' }}
                 />
@@ -71,23 +71,21 @@ export function Dropdown({ trigger, items, align = 'left', className, width = 'm
             }
             return (
               <button
-                key={i}
+                key={item.label}
                 disabled={item.disabled}
                 onClick={() => { item.onClick?.(); setOpen(false); }}
                 className={cn(
                   'w-full flex items-center gap-3 px-4 py-2 text-sm transition-all duration-100 text-left group',
-                  item.danger
-                    ? 'text-danger-500 hover:bg-danger-50'
-                    : 'hover:bg-neutral-50',
+                  'hm-dropdown-item',
+                  item.danger && 'hm-dropdown-item-danger',
                   item.disabled && 'opacity-40 cursor-not-allowed pointer-events-none',
                 )}
-                style={item.danger ? undefined : { color: 'var(--text-secondary)' }}
               >
                 {item.icon && (
                   <span
                     className={cn(
                       'flex-shrink-0 transition-colors duration-100',
-                      item.danger ? 'text-danger-400' : 'text-neutral-400 group-hover:text-neutral-600',
+                      item.danger ? 'hm-dropdown-icon-danger' : 'hm-dropdown-icon',
                     )}
                   >
                     {item.icon}
@@ -105,7 +103,7 @@ export function Dropdown({ trigger, items, align = 'left', className, width = 'm
                   )}
                 </span>
                 {item.checked && (
-                  <Check className="w-3.5 h-3.5 text-primary-500 flex-shrink-0" />
+                  <Check className="w-3.5 h-3.5 flex-shrink-0" style={{ color: 'var(--accent)' }} />
                 )}
               </button>
             );

@@ -163,9 +163,9 @@ export function ConfirmModal({
         {variant === 'danger' && (
           <div
             className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0"
-            style={{ background: 'rgba(255,69,58,0.1)' }}
+            style={{ background: 'var(--danger-subtle)' }}
           >
-            <AlertTriangle className="w-5 h-5" style={{ color: '#FF453A' }} />
+            <AlertTriangle className="w-5 h-5" style={{ color: 'var(--danger)' }} />
           </div>
         )}
         <div className="flex-1 min-w-0">

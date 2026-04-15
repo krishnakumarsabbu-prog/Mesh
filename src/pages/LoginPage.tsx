@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, memo } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import {
   Zap, Eye, EyeOff, ArrowRight, Shield, Activity,
@@ -37,13 +37,13 @@ const DEMO_ACCOUNTS: DemoAccount[] = [
 
 type Mode = 'login' | 'register';
 
-function GlowOrb({ x, y, size, color, opacity }: { x: string; y: string; size: string; color: string; opacity: number }) {
+const GlowOrb = memo(function GlowOrb({ x, y, size, color, opacity }: { x: string; y: string; size: string; color: string; opacity: number }) {
   return (
     <div className="absolute rounded-full pointer-events-none" style={{ left: x, top: y, width: size, height: size, background: `radial-gradient(circle, ${color} 0%, transparent 70%)`, opacity, transform: 'translate(-50%, -50%)', filter: 'blur(1px)' }} />
   );
-}
+});
 
-function AnimatedGrid() {
+const AnimatedGrid = memo(function AnimatedGrid() {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
       <svg className="absolute inset-0 w-full h-full opacity-[0.04]" xmlns="http://www.w3.org/2000/svg">
@@ -52,9 +52,9 @@ function AnimatedGrid() {
       </svg>
     </div>
   );
-}
+});
 
-function SignalPulse() {
+const SignalPulse = memo(function SignalPulse() {
   return (
     <div className="absolute bottom-16 right-8 pointer-events-none">
       {[0, 1, 2].map((i) => (
@@ -63,9 +63,9 @@ function SignalPulse() {
       <div className="relative w-3 h-3 rounded-full" style={{ background: '#00E599', boxShadow: '0 0 12px #00E599' }} />
     </div>
   );
-}
+});
 
-function FeatureChip({ feature }: { feature: typeof FEATURES[0] }) {
+const FeatureChip = memo(function FeatureChip({ feature }: { feature: typeof FEATURES[0] }) {
   const [hovered, setHovered] = useState(false);
   const Icon = feature.icon;
   return (
@@ -83,12 +83,19 @@ function FeatureChip({ feature }: { feature: typeof FEATURES[0] }) {
       </div>
     </div>
   );
+});
+
+interface GlassInputProps {
+  label: string;
+  type: string;
+  value: string;
+  onChange: (v: string) => void;
+  required?: boolean;
+  autoComplete?: string;
+  suffix?: React.ReactNode;
 }
 
-function GlassInput({ label, type, value, onChange, required, autoComplete, suffix }: {
-  label: string; type: string; value: string; onChange: (v: string) => void;
-  required?: boolean; autoComplete?: string; suffix?: React.ReactNode;
-}) {
+const GlassInput = memo(function GlassInput({ label, type, value, onChange, required, autoComplete, suffix }: GlassInputProps) {
   const [focused, setFocused] = useState(false);
   const active = focused || value.length > 0;
   return (
@@ -107,9 +114,14 @@ function GlassInput({ label, type, value, onChange, required, autoComplete, suff
       {suffix && <div className="absolute right-3.5 top-1/2 -translate-y-1/2">{suffix}</div>}
     </div>
   );
+});
+
+interface RoleSelectorProps {
+  selected: DemoAccount | null;
+  onSelect: (a: DemoAccount) => void;
 }
 
-function RoleSelector({ selected, onSelect }: { selected: DemoAccount | null; onSelect: (a: DemoAccount) => void }) {
+const RoleSelector = memo(function RoleSelector({ selected, onSelect }: RoleSelectorProps) {
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
   const copy = (text: string, key: string) => { navigator.clipboard.writeText(text); setCopied(key); setTimeout(() => setCopied(null), 1500); };
@@ -166,9 +178,13 @@ function RoleSelector({ selected, onSelect }: { selected: DemoAccount | null; on
       )}
     </div>
   );
+});
+
+interface GradientButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  loading?: boolean;
 }
 
-function GradientButton({ children, loading, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement> & { loading?: boolean }) {
+const GradientButton = memo(function GradientButton({ children, loading, ...props }: GradientButtonProps) {
   const [hovered, setHovered] = useState(false);
   return (
     <button {...props} disabled={loading || props.disabled} className="relative w-full h-12 rounded-2xl font-semibold text-sm transition-all duration-200 overflow-hidden disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2.5"
@@ -186,7 +202,7 @@ function GradientButton({ children, loading, ...props }: React.ButtonHTMLAttribu
       )}
     </button>
   );
-}
+});
 
 export function LoginPage() {
   const { isAuthenticated, setAuth } = useAuthStore();
