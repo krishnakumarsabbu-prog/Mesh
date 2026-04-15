@@ -775,6 +775,49 @@ export interface RuleMetadata {
   health_status_values: string[];
 }
 
+export interface ProjectConnectorMetricTemplate {
+  id: string;
+  name: string;
+  metric_key: string;
+  description?: string;
+  category?: string;
+  display_order: number;
+  metric_type: MetricType;
+  unit?: string;
+  aggregation_type: AggregationType;
+  threshold_warning?: number | null;
+  threshold_critical?: number | null;
+  is_enabled_by_default: boolean;
+  is_required: boolean;
+  is_custom: boolean;
+}
+
+export interface ProjectConnectorMetricBinding {
+  id: string;
+  project_connector_id: string;
+  metric_template_id: string;
+  is_enabled: boolean;
+  is_critical: boolean;
+  threshold_warning?: number | null;
+  threshold_critical?: number | null;
+  label_override?: string | null;
+  query_config_override?: Record<string, unknown> | null;
+  created_by?: string;
+  created_at: string;
+  updated_at: string;
+  metric_template?: ProjectConnectorMetricTemplate;
+}
+
+export interface ProjectConnectorMetricUpsert {
+  metric_template_id: string;
+  is_enabled: boolean;
+  is_critical: boolean;
+  threshold_warning?: number | null;
+  threshold_critical?: number | null;
+  label_override?: string | null;
+  query_config_override?: Record<string, unknown> | null;
+}
+
 // ─── Analytics Types ──────────────────────────────────────────────────────────
 
 export type AnalyticsTimeRange = '24h' | '7d' | '30d' | '90d' | 'custom';

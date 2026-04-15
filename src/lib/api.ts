@@ -299,6 +299,19 @@ export const metricTemplateApi = {
     apiClient.post(`/connector-catalog/${catalogEntryId}/metrics/${templateId}/test`, data),
 };
 
+export const projectConnectorMetricApi = {
+  list: (projectId: string, pcId: string) =>
+    apiClient.get(`/projects/${projectId}/connectors/${pcId}/metrics`),
+  initialize: (projectId: string, pcId: string) =>
+    apiClient.post(`/projects/${projectId}/connectors/${pcId}/metrics/initialize`),
+  bulkSave: (projectId: string, pcId: string, bindings: object[]) =>
+    apiClient.put(`/projects/${projectId}/connectors/${pcId}/metrics`, { bindings }),
+  update: (projectId: string, pcId: string, bindingId: string, data: object) =>
+    apiClient.put(`/projects/${projectId}/connectors/${pcId}/metrics/${bindingId}`, data),
+  delete: (projectId: string, pcId: string, bindingId: string) =>
+    apiClient.delete(`/projects/${projectId}/connectors/${pcId}/metrics/${bindingId}`),
+};
+
 export const healthRulesApi = {
   metadata: () =>
     apiClient.get('/rules/metadata'),

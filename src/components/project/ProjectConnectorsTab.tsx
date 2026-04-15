@@ -1,9 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import {
-  Plug, Plus, Trash2, Settings, ToggleLeft, ToggleRight, ChevronUp, ChevronDown,
-  CircleCheck as CheckCircle, Circle as XCircle, CircleAlert as AlertCircle,
-  Loader, Activity, ExternalLink, Lock, Eye, EyeOff, RefreshCw, Clock, Zap, List,
-} from 'lucide-react';
+import { Plug, Plus, Trash2, Settings, ToggleLeft, ToggleRight, ChevronUp, ChevronDown, CircleCheck as CheckCircle, Circle as XCircle, CircleAlert as AlertCircle, Loader, Activity, ExternalLink, Lock, Eye, EyeOff, RefreshCw, Clock, Zap, List, ChartBar as BarChart2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Modal, ConfirmModal } from '@/components/ui/Modal';
 import { Input, Select } from '@/components/ui/Input';
@@ -12,6 +8,7 @@ import { notify } from '@/store/notificationStore';
 import { projectConnectorApi, catalogApi, connectorAgentApi } from '@/lib/api';
 import { ProjectConnector, ConnectorCatalogEntry, ConnectorAgentStatus, ConnectorExecutionLog } from '@/types';
 import { cn, formatRelativeTime } from '@/lib/utils';
+import { MetricSelectionModal } from './MetricSelectionModal';
 
 const STATUS_META: Record<string, { label: string; color: string; bg: string; icon: React.ReactNode }> = {
   configured:    { label: 'Configured',   color: '#30D158', bg: 'rgba(48,209,88,0.12)',   icon: <CheckCircle className="w-3.5 h-3.5" /> },
@@ -143,6 +140,8 @@ export function ProjectConnectorsTab({ projectId, canManage }: Props) {
 
   const [removeTarget, setRemoveTarget] = useState<ProjectConnector | null>(null);
   const [removeSaving, setRemoveSaving] = useState(false);
+
+  const [metricsTarget, setMetricsTarget] = useState<ProjectConnector | null>(null);
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
@@ -421,6 +420,7 @@ export function ProjectConnectorsTab({ projectId, canManage }: Props) {
               onRemove={setRemoveTarget}
               onSync={handleSync}
               onLogs={openLogs}
+              onMetrics={setMetricsTarget}
             />
           ))}
         </div>
@@ -619,6 +619,15 @@ export function ProjectConnectorsTab({ projectId, canManage }: Props) {
         )}
       </Modal>
 
+      {metricsTarget && (
+        <MetricSelectionModal
+          open={!!metricsTarget}
+          onClose={() => setMetricsTarget(null)}
+          projectId={projectId}
+          pc={metricsTarget}
+        />
+      )}
+
       <ConfirmModal
         open={!!removeTarget}
         onClose={() => setRemoveTarget(null)}
@@ -727,7 +736,7 @@ function ConfigFieldInput({
 
 function ConnectorRow({
   pc, idx, total, canManage, agentStatus, isSyncing,
-  onConfigure, onToggle, onPriority, onRemove, onSync, onLogs,
+  onConfigure, onToggle, onPriority, onRemove, onSync, onLogs, onMetrics,
 }: {
   pc: ProjectConnector;
   idx: number;
@@ -741,6 +750,7 @@ function ConnectorRow({
   onRemove: (pc: ProjectConnector) => void;
   onSync: (pc: ProjectConnector) => void;
   onLogs: (pc: ProjectConnector) => void;
+  onMetrics: (pc: ProjectConnector) => void;
 }) {
   const catalog = pc.catalog_entry;
   const hasAgentStatus = !!agentStatus && agentStatus.total_executions > 0;
@@ -841,6 +851,13 @@ function ConnectorRow({
               ? <ToggleRight className="w-4 h-4 text-green-500" />
               : <ToggleLeft className="w-4 h-4" />
             }
+          </button>
+          <button
+            onClick={() => onMetrics(pc)}
+            className="p-1.5 rounded-lg text-neutral-400 hover:text-blue-600 hover:bg-blue-50 transition-all"
+            title="Select metrics"
+          >
+            <BarChart2 className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => onConfigure(pc)}
