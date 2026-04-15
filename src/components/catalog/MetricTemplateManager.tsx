@@ -275,6 +275,7 @@ export function MetricTemplateManager({ entry, canManage }: MetricTemplateManage
         onSaved={fetchTemplates}
         catalogEntryId={entry.id}
         template={editTarget}
+        connectorSlug={entry.slug}
       />
 
       <MetricTemplateTestModal

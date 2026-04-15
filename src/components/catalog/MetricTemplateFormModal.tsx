@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button';
 import { Input, Select, TextArea } from '@/components/ui/Input';
 import { metricTemplateApi } from '@/lib/api';
 import { notify } from '@/store/notificationStore';
+import { ConnectorMetricConfigForm, ConnectorQueryConfig, ConnectorSlug } from './ConnectorMetricConfigForm';
 
 const METRIC_TYPE_OPTIONS: { value: MetricType; label: string }[] = [
   { value: 'number', label: 'Number' },
@@ -64,6 +65,7 @@ interface FormState {
   is_enabled_by_default: boolean;
   is_required: boolean;
   is_custom: boolean;
+  connector_query_config: ConnectorQueryConfig;
 }
 
 const DEFAULT_FORM: FormState = {
@@ -84,6 +86,7 @@ const DEFAULT_FORM: FormState = {
   is_enabled_by_default: true,
   is_required: false,
   is_custom: false,
+  connector_query_config: {},
 };
 
 function toSnakeCase(str: string): string {
@@ -99,6 +102,7 @@ interface MetricTemplateFormModalProps {
   onSaved: () => void;
   catalogEntryId: string;
   template?: MetricTemplate | null;
+  connectorSlug?: ConnectorSlug;
 }
 
 export function MetricTemplateFormModal({
@@ -107,6 +111,7 @@ export function MetricTemplateFormModal({
   onSaved,
   catalogEntryId,
   template,
+  connectorSlug,
 }: MetricTemplateFormModalProps) {
   const [form, setForm] = useState<FormState>(DEFAULT_FORM);
   const [saving, setSaving] = useState(false);
@@ -134,6 +139,7 @@ export function MetricTemplateFormModal({
         is_enabled_by_default: template.is_enabled_by_default,
         is_required: template.is_required,
         is_custom: template.is_custom,
+        connector_query_config: (qc as ConnectorQueryConfig) || {},
       });
     } else {
       setForm(DEFAULT_FORM);
@@ -177,7 +183,16 @@ export function MetricTemplateFormModal({
       is_custom: form.is_custom,
     };
 
-    if (form.query_path || form.query_method !== 'GET') {
+    const hasConnectorConfig = connectorSlug && Object.keys(form.connector_query_config).length > 0;
+    const hasGenericConfig = form.query_path || form.query_method !== 'GET';
+
+    if (hasConnectorConfig) {
+      payload.query_config = {
+        method: form.query_method,
+        path: form.query_path || undefined,
+        ...form.connector_query_config,
+      };
+    } else if (hasGenericConfig) {
       payload.query_config = {
         method: form.query_method,
         path: form.query_path || undefined,
@@ -318,26 +333,34 @@ export function MetricTemplateFormModal({
         </Section>
 
         <Section title="Execution Config">
-          <div className="grid grid-cols-3 gap-4">
-            <Select
-              label="HTTP Method"
-              value={form.query_method}
-              onChange={setField('query_method')}
-              options={[
-                { value: 'GET', label: 'GET' },
-                { value: 'POST', label: 'POST' },
-              ]}
+          {connectorSlug ? (
+            <ConnectorMetricConfigForm
+              slug={connectorSlug}
+              value={form.connector_query_config}
+              onChange={(updated) => setForm((prev) => ({ ...prev, connector_query_config: updated }))}
             />
-            <div className="col-span-2">
-              <Input
-                label="Query Path / Endpoint Suffix"
-                placeholder="e.g., /api/v1/metrics/cpu"
-                value={form.query_path}
-                onChange={setField('query_path')}
-                hint="Appended to the connector base URL"
+          ) : (
+            <div className="grid grid-cols-3 gap-4">
+              <Select
+                label="HTTP Method"
+                value={form.query_method}
+                onChange={setField('query_method')}
+                options={[
+                  { value: 'GET', label: 'GET' },
+                  { value: 'POST', label: 'POST' },
+                ]}
               />
+              <div className="col-span-2">
+                <Input
+                  label="Query Path / Endpoint Suffix"
+                  placeholder="e.g., /api/v1/metrics/cpu"
+                  value={form.query_path}
+                  onChange={setField('query_path')}
+                  hint="Appended to the connector base URL"
+                />
+              </div>
             </div>
-          </div>
+          )}
           <div className="grid grid-cols-2 gap-4">
             <Select
               label="Parser Type"
