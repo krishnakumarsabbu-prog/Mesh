@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from sqlalchemy import Column, String, Boolean, DateTime, Text, Integer, Float, JSON, Enum as SAEnum
+from sqlalchemy import Column, String, Boolean, DateTime, Text, Integer, Float, JSON, Enum as SAEnum, ForeignKey
 from sqlalchemy.orm import relationship
 from app.db.base import Base
 import enum
@@ -80,7 +80,7 @@ class DashboardWidget(Base):
     __tablename__ = "dashboard_widgets"
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    dashboard_template_id = Column(String, nullable=False, index=True)
+    dashboard_template_id = Column(String, ForeignKey("dashboard_templates.id"), nullable=False, index=True)
     widget_type = Column(SAEnum(WidgetType), nullable=False)
     title = Column(String, nullable=False)
     subtitle = Column(String, nullable=True)
@@ -106,7 +106,7 @@ class WidgetMetricBinding(Base):
     __tablename__ = "widget_metric_bindings"
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    widget_id = Column(String, nullable=False, index=True)
+    widget_id = Column(String, ForeignKey("dashboard_widgets.id"), nullable=False, index=True)
     metric_source_scope = Column(SAEnum(MetricSourceScope), nullable=False, default=MetricSourceScope.CONNECTOR_METRIC)
     metric_key = Column(String, nullable=False)
     connector_type = Column(String, nullable=True)

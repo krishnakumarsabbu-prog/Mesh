@@ -21,6 +21,7 @@ from sqlalchemy import (
     Column,
     DateTime,
     Float,
+    ForeignKey,
     Index,
     Integer,
     String,
@@ -57,7 +58,7 @@ class TeamAggregateMetric(Base):
     __tablename__ = "team_aggregate_metrics"
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    team_id = Column(String, nullable=False, index=True)
+    team_id = Column(String, ForeignKey("teams.id"), nullable=False, index=True)
     metric_key = Column(String, nullable=False, index=True)
     numeric_value = Column(Float, nullable=True)
     string_value = Column(Text, nullable=True)
@@ -90,7 +91,7 @@ class LobAggregateMetric(Base):
     __tablename__ = "lob_aggregate_metrics"
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    lob_id = Column(String, nullable=False, index=True)
+    lob_id = Column(String, ForeignKey("lobs.id"), nullable=False, index=True)
     metric_key = Column(String, nullable=False, index=True)
     numeric_value = Column(Float, nullable=True)
     string_value = Column(Text, nullable=True)
