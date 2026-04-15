@@ -1,4 +1,5 @@
 import React, { useEffect, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { X, TriangleAlert as AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from './Button';
@@ -49,9 +50,9 @@ export function Modal({ open, onClose, title, subtitle, size = 'md', footer, chi
 
   if (!open) return null;
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
       role="dialog"
       aria-modal="true"
       aria-label={title}
@@ -64,18 +65,19 @@ export function Modal({ open, onClose, title, subtitle, size = 'md', footer, chi
       <div
         ref={dialogRef}
         className={cn(
-          'relative w-full rounded-3xl overflow-hidden animate-modal-enter',
+          'relative w-full rounded-3xl flex flex-col animate-modal-enter',
           sizes[size],
         )}
         style={{
           background: 'var(--app-surface-raised)',
           boxShadow: 'var(--shadow-modal)',
           border: '1px solid var(--app-border)',
+          maxHeight: 'calc(100vh - 2rem)',
         }}
       >
         {(title || subtitle) && (
           <div
-            className="flex items-start justify-between px-6 py-5"
+            className="flex items-start justify-between px-6 py-5 flex-shrink-0"
             style={{ borderBottom: '1px solid var(--app-border)' }}
           >
             <div className="flex-1 min-w-0 pr-4">
@@ -112,13 +114,13 @@ export function Modal({ open, onClose, title, subtitle, size = 'md', footer, chi
           </div>
         )}
 
-        <div className={cn(noPadding ? '' : 'px-6 py-5')}>
+        <div className={cn('flex-1 overflow-y-auto', noPadding ? '' : 'px-6 py-5')}>
           {children}
         </div>
 
         {footer && (
           <div
-            className="flex items-center justify-end gap-2.5 px-6 py-4"
+            className="flex items-center justify-end gap-2.5 px-6 py-4 flex-shrink-0"
             style={{
               borderTop: '1px solid var(--app-border)',
               background: 'var(--app-bg-subtle)',
@@ -128,7 +130,8 @@ export function Modal({ open, onClose, title, subtitle, size = 'md', footer, chi
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
