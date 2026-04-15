@@ -77,7 +77,24 @@ class ProjectConnectorMetricService:
             .options(selectinload(ProjectConnectorMetric.metric_template))
             .where(ProjectConnectorMetric.id == binding.id)
         )
-        return result.scalar_one()
+        refreshed = result.scalar_one()
+
+        try:
+            from app.models.project_connector import ProjectConnector
+            from sqlalchemy import select as _select
+            pc_result = await db.execute(
+                _select(ProjectConnector.project_id).where(
+                    ProjectConnector.id == project_connector_id
+                )
+            )
+            pc_row = pc_result.scalar_one_or_none()
+            if pc_row:
+                from app.services.aggregation_scheduler import aggregation_scheduler
+                await aggregation_scheduler.after_metric_update(pc_row)
+        except Exception:
+            pass
+
+        return refreshed
 
     async def bulk_save(
         self,
@@ -91,6 +108,22 @@ class ProjectConnectorMetricService:
             binding = await self.upsert(db, project_connector_id, item, user_id)
             saved.append(binding)
         await db.flush()
+
+        try:
+            from app.models.project_connector import ProjectConnector
+            from sqlalchemy import select as _select
+            pc_result = await db.execute(
+                _select(ProjectConnector.project_id).where(
+                    ProjectConnector.id == project_connector_id
+                )
+            )
+            pc_row = pc_result.scalar_one_or_none()
+            if pc_row:
+                from app.services.aggregation_scheduler import aggregation_scheduler
+                await aggregation_scheduler.after_metric_update(pc_row)
+        except Exception:
+            pass
+
         return saved
 
     async def delete_binding(

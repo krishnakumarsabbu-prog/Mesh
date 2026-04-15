@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.v1.endpoints import auth, users, lobs, projects, connectors, health, chatbot, audit, connector_catalog, project_connectors, connector_agents, health_runs, project_dashboard, health_rules, analytics, search, teams, metric_templates, project_connector_metrics, dashboard_templates, project_dashboard_assignments
+from app.api.v1.endpoints import auth, users, lobs, projects, connectors, health, chatbot, audit, connector_catalog, project_connectors, connector_agents, health_runs, project_dashboard, health_rules, analytics, search, teams, metric_templates, project_connector_metrics, dashboard_templates, project_dashboard_assignments, aggregations
 
 api_router = APIRouter(prefix="/api/v1")
 
@@ -24,3 +24,4 @@ api_router.include_router(health_rules.router)
 api_router.include_router(analytics.router)
 api_router.include_router(search.router)
 api_router.include_router(dashboard_templates.router)
+api_router.include_router(aggregations.router)

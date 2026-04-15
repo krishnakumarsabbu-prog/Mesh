@@ -285,7 +285,15 @@ class HealthOrchestrator:
                 len(rule_factors),
             )
 
-            return self._build_run_response(health_run, exec_results, all_factors)
+            response = self._build_run_response(health_run, exec_results, all_factors)
+
+            try:
+                from app.services.aggregation_scheduler import aggregation_scheduler
+                await aggregation_scheduler.after_project_run(project_id)
+            except Exception as agg_exc:
+                logger.warning("Aggregation trigger failed (non-fatal): %s", agg_exc)
+
+            return response
 
         except Exception as exc:
             logger.exception(
