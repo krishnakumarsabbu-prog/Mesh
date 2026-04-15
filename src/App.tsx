@@ -30,7 +30,8 @@ import { ProjectDashboardsPage } from '@/pages/ProjectDashboardsPage';
 import { LiveDashboardPage } from '@/pages/LiveDashboardPage';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { useAuthStore } from '@/store/authStore';
-import { isAdmin } from '@/lib/permissions';
+import { isAdmin, canManageRoles } from '@/lib/permissions';
+import { RolesPage } from '@/pages/RolesPage';
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuthStore();
@@ -42,6 +43,13 @@ function RequireAdmin({ children }: { children: React.ReactNode }) {
   const { user, isAuthenticated } = useAuthStore();
   if (!isAuthenticated || !user) return <Navigate to="/login" replace />;
   if (!isAdmin(user.role)) return <Navigate to="/dashboard" replace />;
+  return <>{children}</>;
+}
+
+function RequireRbacManage({ children }: { children: React.ReactNode }) {
+  const { user, isAuthenticated } = useAuthStore();
+  if (!isAuthenticated || !user) return <Navigate to="/login" replace />;
+  if (!canManageRoles(user.role)) return <Navigate to="/dashboard" replace />;
   return <>{children}</>;
 }
 
@@ -95,6 +103,14 @@ export default function App() {
               }
             />
             <Route path="rules" element={<ErrorBoundary><RulesPage /></ErrorBoundary>} />
+            <Route
+              path="roles"
+              element={
+                <RequireRbacManage>
+                  <ErrorBoundary><RolesPage /></ErrorBoundary>
+                </RequireRbacManage>
+              }
+            />
             <Route path="analytics" element={<ErrorBoundary><AnalyticsPage /></ErrorBoundary>} />
             <Route path="projects/:projectId/analytics" element={<ErrorBoundary><AnalyticsPage /></ErrorBoundary>} />
             <Route path="dashboard-builder" element={<ErrorBoundary><DashboardBuilderPage /></ErrorBoundary>} />

@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Building2, FolderOpen, Plug, Activity, MessageSquare, Settings, ChevronLeft, ChevronRight, Users, Zap, LogOut, Shield, Library, ChartBar as BarChart2, FileText, UsersRound, LayoutTemplate } from 'lucide-react';
+import { LayoutDashboard, Building2, FolderOpen, Plug, Activity, MessageSquare, Settings, ChevronLeft, ChevronRight, Users, Zap, LogOut, Shield, Library, ChartBar as BarChart2, FileText, UsersRound, LayoutTemplate, ShieldCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUIStore } from '@/store/uiStore';
 import { useAuthStore } from '@/store/authStore';
-import { isAdmin, ROLE_LABELS } from '@/lib/permissions';
+import { isAdmin, canManageRoles, ROLE_LABELS } from '@/lib/permissions';
 
 interface NavItem {
   label: string;
@@ -31,6 +31,10 @@ const navItems: NavItem[] = [
 const adminNavItems: NavItem[] = [
   { label: 'Users', href: '/users', icon: Users, description: 'User management' },
   { label: 'Audit Logs', href: '/audit', icon: FileText, description: 'System event trail' },
+];
+
+const rbacNavItems: NavItem[] = [
+  { label: 'Roles & Permissions', href: '/roles', icon: ShieldCheck, description: 'RBAC management' },
 ];
 
 const systemNavItems: NavItem[] = [
@@ -149,6 +153,7 @@ export function Sidebar() {
   const { sidebarCollapsed, toggleSidebar } = useUIStore();
   const { user, logout } = useAuthStore();
   const userIsAdmin = user ? isAdmin(user.role) : false;
+  const userCanManageRoles = user ? canManageRoles(user.role) : false;
 
   return (
     <aside
@@ -199,6 +204,14 @@ export function Sidebar() {
           <SidebarSection
             label="Administration"
             items={adminNavItems}
+            collapsed={sidebarCollapsed}
+          />
+        )}
+
+        {userCanManageRoles && (
+          <SidebarSection
+            label="Security"
+            items={rbacNavItems}
             collapsed={sidebarCollapsed}
           />
         )}

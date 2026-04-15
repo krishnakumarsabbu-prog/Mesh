@@ -3,6 +3,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.base import get_db
 from app.services.auth_service import auth_service
+from app.services.rbac_service import rbac_service
 from app.models.user import User, UserRole
 
 bearer_scheme = HTTPBearer()
@@ -11,6 +12,8 @@ ADMIN_ROLES = {UserRole.SUPER_ADMIN, UserRole.LOB_ADMIN, UserRole.PROJECT_ADMIN,
 SUPER_ADMIN_ROLES = {UserRole.SUPER_ADMIN}
 LOB_ADMIN_ROLES = {UserRole.SUPER_ADMIN, UserRole.LOB_ADMIN, UserRole.ADMIN}
 PROJECT_ADMIN_ROLES = {UserRole.SUPER_ADMIN, UserRole.LOB_ADMIN, UserRole.PROJECT_ADMIN, UserRole.ADMIN}
+TEAM_ADMIN_ROLES = {UserRole.SUPER_ADMIN, UserRole.LOB_ADMIN, UserRole.ADMIN}
+READ_ONLY_ROLES = {UserRole.ANALYST, UserRole.VIEWER, UserRole.PROJECT_USER}
 
 
 async def get_current_user(
@@ -52,3 +55,27 @@ async def require_project_admin(current_user: User = Depends(get_current_user)) 
 
 def check_permission(user: User, allowed_roles: set) -> bool:
     return user.role in allowed_roles
+
+
+def require_permission(entity: str, action: str):
+    async def _dependency(
+        current_user: User = Depends(get_current_user),
+        db: AsyncSession = Depends(get_db),
+    ) -> User:
+        has_perm = await rbac_service.user_has_permission(db, current_user.role.value, entity, action)
+        if not has_perm:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Permission denied: {entity}:{action}",
+            )
+        return current_user
+    return _dependency
+
+
+async def require_rbac_manage(current_user: User = Depends(get_current_user)) -> User:
+    if current_user.role not in {UserRole.SUPER_ADMIN, UserRole.ADMIN}:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only Super Admin or Admin can manage roles and permissions",
+        )
+    return current_user

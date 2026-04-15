@@ -408,6 +408,23 @@ export const lobDashboardAssignmentApi = {
     apiClient.delete(`/lobs/${lobId}/dashboards/${assignmentId}/widgets/${widgetId}/override`),
 };
 
+export const rbacApi = {
+  getPermissions: () => apiClient.get('/rbac/permissions'),
+  getMatrix: () => apiClient.get('/rbac/matrix'),
+  getRolePermissions: (role: string) => apiClient.get(`/rbac/roles/${role}/permissions`),
+  setRolePermissions: (role: string, permissions: string[]) =>
+    apiClient.put(`/rbac/roles/${role}/permissions`, { permissions }),
+  getMyPermissions: () => apiClient.get('/rbac/my-permissions'),
+  getScopedAssignments: (params?: { scope_type?: string; scope_id?: string }) =>
+    apiClient.get('/rbac/scoped-assignments', { params }),
+  getUserScopedAssignments: (userId: string) =>
+    apiClient.get(`/rbac/users/${userId}/scoped-assignments`),
+  createScopedAssignment: (data: { user_id: string; role: string; scope_type: string; scope_id: string }) =>
+    apiClient.post('/rbac/scoped-assignments', data),
+  revokeScopedAssignment: (assignmentId: string) =>
+    apiClient.delete(`/rbac/scoped-assignments/${assignmentId}`),
+};
+
 export const healthRulesApi = {
   metadata: () =>
     apiClient.get('/rules/metadata'),

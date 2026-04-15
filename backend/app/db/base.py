@@ -29,7 +29,7 @@ async def get_db():
 async def init_db():
     try:
         async with engine.begin() as conn:
-            from app.models import user, lob, project, connector, health_check, audit, connector_catalog, project_connector, connector_execution_log, health_run, health_rule, chat, team, metric_template, project_connector_metric, dashboard_template, project_dashboard_assignment, aggregates, team_dashboard_assignment, lob_dashboard_assignment  # noqa: F401
+            from app.models import user, lob, project, connector, health_check, audit, connector_catalog, project_connector, connector_execution_log, health_run, health_rule, chat, team, metric_template, project_connector_metric, dashboard_template, project_dashboard_assignment, aggregates, team_dashboard_assignment, lob_dashboard_assignment, rbac  # noqa: F401
             await conn.run_sync(Base.metadata.create_all)
         logger.info("Database tables created/verified")
     except Exception as exc:
@@ -41,6 +41,8 @@ async def init_db():
         await _seed_connector_catalog()
     else:
         logger.info("Database seeding skipped (SEED_DB=false)")
+
+    await _seed_rbac_permissions()
 
 
 _DEFAULT_USERS = [
@@ -1706,6 +1708,16 @@ _DEFAULT_METRIC_TEMPLATES = {
         },
     ],
 }
+
+
+async def _seed_rbac_permissions():
+    from app.services.rbac_service import rbac_service
+    try:
+        async with AsyncSessionLocal() as session:
+            await rbac_service.seed_permissions(session)
+            logger.info("RBAC permissions seeded/verified")
+    except Exception as exc:
+        logger.error(f"RBAC permission seeding failed: {exc}")
 
 
 async def _seed_metric_templates():
