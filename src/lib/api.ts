@@ -92,7 +92,7 @@ export const lobApi = {
 };
 
 export const projectApi = {
-  list: (lob_id?: string) => apiClient.get('/projects', { params: { lob_id } }),
+  list: (lob_id?: string, team_id?: string) => apiClient.get('/projects', { params: { lob_id, team_id } }),
   create: (data: object) => apiClient.post('/projects', data),
   get: (id: string) => apiClient.get(`/projects/${id}`),
   update: (id: string, data: object) => apiClient.patch(`/projects/${id}`, data),

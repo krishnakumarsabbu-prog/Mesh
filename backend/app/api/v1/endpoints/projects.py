@@ -17,12 +17,14 @@ PROJECT_MANAGE_ROLES = {UserRole.SUPER_ADMIN, UserRole.LOB_ADMIN, UserRole.PROJE
 @router.get("", response_model=List[dict])
 async def list_projects(
     lob_id: Optional[str] = Query(None),
+    team_id: Optional[str] = Query(None),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     return await project_service.get_all(
         db,
         lob_id=lob_id,
+        team_id=team_id,
         user_id=current_user.id,
         user_role=current_user.role.value
     )
@@ -39,16 +41,16 @@ async def create_project(
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only LOB Admins can create projects")
     try:
         project = await project_service.create(db, data, current_user.id)
-        d = {**project.__dict__}
-        d.pop("_sa_instance_state", None)
-        d.update({"connector_count": 0, "healthy_count": 0, "degraded_count": 0, "down_count": 0, "member_count": 0})
+        d = await project_service.get_by_id_with_counts(db, project.id)
         await audit_service.log(
             db, action="project.create", resource_type="project", resource_id=project.id,
             user_id=current_user.id, tenant_id=current_user.tenant_id,
             ip_address=request.client.host if request.client else None,
-            changes={"name": project.name, "lob_id": project.lob_id},
+            changes={"name": project.name, "lob_id": project.lob_id, "team_id": project.team_id},
         )
         return d
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 

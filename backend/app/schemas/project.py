@@ -15,6 +15,7 @@ class ProjectBase(BaseModel):
 class ProjectCreate(ProjectBase):
     slug: str
     lob_id: str
+    team_id: str
 
 
 class ProjectUpdate(BaseModel):
@@ -30,6 +31,8 @@ class ProjectResponse(ProjectBase):
     id: str
     slug: str
     lob_id: str
+    team_id: Optional[str] = None
+    team_name: Optional[str] = None
     status: ProjectStatus
     created_by: Optional[str]
     created_at: datetime

@@ -7,8 +7,8 @@ import {
   Search, X, Users, ChevronRight, ArrowUpDown,
 } from 'lucide-react';
 import { useUIStore } from '@/store/uiStore';
-import { projectApi, lobApi } from '@/lib/api';
-import { Project, Lob } from '@/types';
+import { projectApi, lobApi, teamApi } from '@/lib/api';
+import { Project, Lob, Team } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { StatusBadge } from '@/components/ui/Badge';
 import { Modal, ConfirmModal } from '@/components/ui/Modal';
@@ -37,12 +37,15 @@ export function ProjectsPage() {
 
   const [projects, setProjects] = useState<Project[]>([]);
   const [lobs, setLobs] = useState<Lob[]>([]);
+  const [teams, setTeams] = useState<Team[]>([]);
+  const [teamsForForm, setTeamsForForm] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<ViewMode>('card');
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [envFilter, setEnvFilter] = useState('');
   const [lobFilter, setLobFilter] = useState(lobIdFilter || '');
+  const [teamFilter, setTeamFilter] = useState('');
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
 
@@ -52,7 +55,7 @@ export function ProjectsPage() {
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
     name: '', slug: '', description: '', lob_id: lobIdFilter || '',
-    environment: 'production', color: '#30D158',
+    team_id: '', environment: 'production', color: '#30D158',
   });
   const [editForm, setEditForm] = useState({
     name: '', description: '', status: 'active', environment: 'production', color: '#30D158',
@@ -67,12 +70,14 @@ export function ProjectsPage() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [projRes, lobRes] = await Promise.all([
+      const [projRes, lobRes, teamRes] = await Promise.all([
         projectApi.list(lobIdFilter || undefined),
         lobApi.list(),
+        teamApi.list(),
       ]);
       setProjects(projRes.data);
       setLobs(lobRes.data);
+      setTeams(teamRes.data);
     } catch {
       notify.error('Failed to load projects');
     } finally {
@@ -93,6 +98,7 @@ export function ProjectsPage() {
     if (statusFilter) result = result.filter(p => p.status === statusFilter);
     if (envFilter) result = result.filter(p => p.environment === envFilter);
     if (lobFilter) result = result.filter(p => p.lob_id === lobFilter);
+    if (teamFilter) result = result.filter(p => p.team_id === teamFilter);
 
     result.sort((a, b) => {
       let av: string | number = '';
@@ -107,7 +113,7 @@ export function ProjectsPage() {
       return 0;
     });
     return result;
-  }, [projects, search, statusFilter, envFilter, lobFilter, sortField, sortDir]);
+  }, [projects, search, statusFilter, envFilter, lobFilter, teamFilter, sortField, sortDir]);
 
   const getLobName = (id: string) => lobs.find(l => l.id === id)?.name || id;
 
@@ -118,12 +124,16 @@ export function ProjectsPage() {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!form.team_id) {
+      notify.error('Please select a team for this project');
+      return;
+    }
     setSaving(true);
     try {
       await projectApi.create({ ...form });
       notify.success('Project created');
       setCreateOpen(false);
-      setForm({ name: '', slug: '', description: '', lob_id: '', environment: 'production', color: '#30D158' });
+      setForm({ name: '', slug: '', description: '', lob_id: '', team_id: '', environment: 'production', color: '#30D158' });
       fetchData();
     } catch (err: unknown) {
       notify.error('Failed to create project', (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail);
@@ -168,7 +178,11 @@ export function ProjectsPage() {
     setEditTarget(p);
   };
 
-  const hasFilters = search || statusFilter || envFilter || (lobFilter && !lobIdFilter);
+  const hasFilters = search || statusFilter || envFilter || (lobFilter && !lobIdFilter) || teamFilter;
+
+  const filteredTeamsForLob = form.lob_id
+    ? teams.filter(t => t.lob_id === form.lob_id)
+    : [];
 
   const filterSelectStyle: React.CSSProperties = {
     background: 'var(--app-bg-muted)',
@@ -215,7 +229,7 @@ export function ProjectsPage() {
         {!lobIdFilter && (
           <select
             value={lobFilter}
-            onChange={e => setLobFilter(e.target.value)}
+            onChange={e => { setLobFilter(e.target.value); setTeamFilter(''); }}
             className="text-sm rounded-xl px-3 py-2 outline-none focus-ring appearance-none transition-all"
             style={filterSelectStyle}
           >
@@ -223,6 +237,18 @@ export function ProjectsPage() {
             {lobs.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
           </select>
         )}
+
+        <select
+          value={teamFilter}
+          onChange={e => setTeamFilter(e.target.value)}
+          className="text-sm rounded-xl px-3 py-2 outline-none focus-ring appearance-none transition-all"
+          style={filterSelectStyle}
+        >
+          <option value="">All Teams</option>
+          {(lobFilter ? teams.filter(t => t.lob_id === lobFilter) : teams).map(t => (
+            <option key={t.id} value={t.id}>{t.name}</option>
+          ))}
+        </select>
 
         <select
           value={statusFilter}
@@ -250,7 +276,7 @@ export function ProjectsPage() {
 
         {hasFilters && (
           <button
-            onClick={() => { setSearch(''); setStatusFilter(''); setEnvFilter(''); setLobFilter(''); }}
+            onClick={() => { setSearch(''); setStatusFilter(''); setEnvFilter(''); setLobFilter(''); setTeamFilter(''); }}
             className="flex items-center gap-1.5 text-xs px-2 py-1.5 rounded-lg transition-colors"
             style={{ color: 'var(--text-muted)' }}
             onMouseEnter={e => { e.currentTarget.style.color = '#FF453A'; e.currentTarget.style.background = 'rgba(255,69,58,0.08)'; }}
@@ -360,8 +386,18 @@ export function ProjectsPage() {
           <Select
             label="Line of Business"
             value={form.lob_id}
-            onChange={e => setForm({ ...form, lob_id: e.target.value })}
+            onChange={e => setForm({ ...form, lob_id: e.target.value, team_id: '' })}
             options={[{ value: '', label: 'Select a LOB...' }, ...lobs.map(l => ({ value: l.id, label: l.name }))]}
+            required
+          />
+          <Select
+            label="Team"
+            value={form.team_id}
+            onChange={e => setForm({ ...form, team_id: e.target.value })}
+            options={[
+              { value: '', label: form.lob_id ? 'Select a team...' : 'Select a LOB first...' },
+              ...filteredTeamsForLob.map(t => ({ value: t.id, label: t.name })),
+            ]}
             required
           />
           <Input
@@ -535,7 +571,9 @@ function ProjectCardGrid({ projects, lobs, canCreate, onNavigate, onEdit, onDele
               </div>
               <div className="flex-1 min-w-0 pr-12">
                 <h3 className="text-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{proj.name}</h3>
-                <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>{getLobName(proj.lob_id)}</p>
+                <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>
+                  {getLobName(proj.lob_id)}{proj.team_name ? ` · ${proj.team_name}` : ''}
+                </p>
               </div>
             </div>
 
@@ -637,7 +675,9 @@ function ProjectListView({ projects, lobs, canCreate, onNavigate, onEdit, onDele
                 <p className="text-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{proj.name}</p>
                 <StatusBadge status={proj.status} size="xs" />
               </div>
-              <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>{getLobName(proj.lob_id)} · {proj.environment}</p>
+              <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>
+                {getLobName(proj.lob_id)}{proj.team_name ? ` · ${proj.team_name}` : ''} · {proj.environment}
+              </p>
             </div>
 
             <div className="hidden md:flex items-center gap-2 w-32">
@@ -718,7 +758,7 @@ function ProjectTableView({ projects, lobs, canCreate, sortField, sortDir, onSor
             <tr className="border-b" style={{ borderColor: 'var(--app-border)', background: 'var(--app-bg-subtle)' }}>
               <th className="text-left px-4 py-3"><SortHeader field="name" label="Project" /></th>
               <th className="text-left px-4 py-3 hidden md:table-cell">
-                <span className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>LOB</span>
+                <span className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>LOB / Team</span>
               </th>
               <th className="text-left px-4 py-3"><SortHeader field="status" label="Status" /></th>
               <th className="text-left px-4 py-3 hidden lg:table-cell">
@@ -763,7 +803,12 @@ function ProjectTableView({ projects, lobs, canCreate, sortField, sortDir, onSor
                     </div>
                   </td>
                   <td className="px-4 py-3 hidden md:table-cell">
-                    <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>{getLobName(proj.lob_id)}</span>
+                    <div>
+                      <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>{getLobName(proj.lob_id)}</span>
+                      {proj.team_name && (
+                        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{proj.team_name}</p>
+                      )}
+                    </div>
                   </td>
                   <td className="px-4 py-3">
                     <StatusBadge status={proj.status} size="xs" />

@@ -118,6 +118,8 @@ export interface Project {
   slug: string;
   description?: string;
   lob_id: string;
+  team_id?: string;
+  team_name?: string;
   status: 'active' | 'inactive' | 'maintenance' | 'archived';
   environment: string;
   tags?: string;

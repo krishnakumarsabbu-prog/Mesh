@@ -26,6 +26,7 @@ class Project(Base):
     slug = Column(String, nullable=False, index=True)
     description = Column(Text, nullable=True)
     lob_id = Column(String, ForeignKey("lobs.id"), nullable=False)
+    team_id = Column(String, ForeignKey("teams.id"), nullable=True, index=True)
     status = Column(SAEnum(ProjectStatus), default=ProjectStatus.ACTIVE)
     environment = Column(String, default="production")
     tags = Column(Text, nullable=True)
@@ -35,6 +36,7 @@ class Project(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     lob = relationship("Lob", back_populates="projects")
+    team = relationship("Team", back_populates="owned_projects", foreign_keys=[team_id])
     connectors = relationship("Connector", back_populates="project")
     health_checks = relationship("HealthCheck", back_populates="project")
     members = relationship("ProjectMember", back_populates="project", cascade="all, delete-orphan")

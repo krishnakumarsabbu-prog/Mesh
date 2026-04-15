@@ -24,6 +24,7 @@ class Team(Base):
     lob = relationship("Lob", back_populates="teams")
     members = relationship("TeamMember", back_populates="team", cascade="all, delete-orphan")
     projects = relationship("TeamProject", back_populates="team", cascade="all, delete-orphan")
+    owned_projects = relationship("Project", back_populates="team", foreign_keys="Project.team_id")
 
 
 class TeamMember(Base):

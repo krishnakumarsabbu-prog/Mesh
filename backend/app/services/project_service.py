@@ -2,6 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from typing import List, Optional
 from app.models.project import Project, ProjectMember, ProjectMemberRole
+from app.models.team import Team
 from app.models.connector import Connector, ConnectorStatus
 from app.models.user import User
 from app.schemas.project import ProjectCreate, ProjectUpdate, ProjectMemberCreate, ProjectMemberUpdate
@@ -10,12 +11,20 @@ import uuid
 
 class ProjectService:
     async def create(self, db: AsyncSession, data: ProjectCreate, user_id: str) -> Project:
+        team_result = await db.execute(select(Team).where(Team.id == data.team_id))
+        team = team_result.scalar_one_or_none()
+        if not team:
+            raise ValueError("Team not found")
+        if team.lob_id != data.lob_id:
+            raise ValueError("Team does not belong to the selected LOB")
+
         project = Project(
             id=str(uuid.uuid4()),
             name=data.name,
             slug=data.slug,
             description=data.description,
             lob_id=data.lob_id,
+            team_id=data.team_id,
             environment=data.environment,
             tags=data.tags,
             color=data.color,
@@ -25,10 +34,38 @@ class ProjectService:
         await db.flush()
         return project
 
-    async def get_all(self, db: AsyncSession, lob_id: Optional[str] = None, user_id: Optional[str] = None, user_role: Optional[str] = None) -> List[dict]:
+    async def _enrich_project(self, db: AsyncSession, p: Project) -> dict:
+        conn_count = await db.execute(select(func.count(Connector.id)).where(Connector.project_id == p.id))
+        healthy = await db.execute(select(func.count(Connector.id)).where(
+            Connector.project_id == p.id, Connector.status == ConnectorStatus.HEALTHY))
+        degraded = await db.execute(select(func.count(Connector.id)).where(
+            Connector.project_id == p.id, Connector.status == ConnectorStatus.DEGRADED))
+        down = await db.execute(select(func.count(Connector.id)).where(
+            Connector.project_id == p.id, Connector.status == ConnectorStatus.DOWN))
+        member_count = await db.execute(select(func.count(ProjectMember.id)).where(ProjectMember.project_id == p.id))
+
+        team_name = None
+        if p.team_id:
+            team_result = await db.execute(select(Team).where(Team.id == p.team_id))
+            team = team_result.scalar_one_or_none()
+            team_name = team.name if team else None
+
+        d = {**p.__dict__}
+        d.pop("_sa_instance_state", None)
+        d["connector_count"] = conn_count.scalar()
+        d["healthy_count"] = healthy.scalar()
+        d["degraded_count"] = degraded.scalar()
+        d["down_count"] = down.scalar()
+        d["member_count"] = member_count.scalar()
+        d["team_name"] = team_name
+        return d
+
+    async def get_all(self, db: AsyncSession, lob_id: Optional[str] = None, team_id: Optional[str] = None, user_id: Optional[str] = None, user_role: Optional[str] = None) -> List[dict]:
         q = select(Project)
         if lob_id:
             q = q.where(Project.lob_id == lob_id)
+        if team_id:
+            q = q.where(Project.team_id == team_id)
 
         if user_role in ("project_admin", "project_user"):
             member_subq = select(ProjectMember.project_id).where(ProjectMember.user_id == user_id)
@@ -38,22 +75,7 @@ class ProjectService:
         projects = result.scalars().all()
         output = []
         for p in projects:
-            conn_count = await db.execute(select(func.count(Connector.id)).where(Connector.project_id == p.id))
-            healthy = await db.execute(select(func.count(Connector.id)).where(
-                Connector.project_id == p.id, Connector.status == ConnectorStatus.HEALTHY))
-            degraded = await db.execute(select(func.count(Connector.id)).where(
-                Connector.project_id == p.id, Connector.status == ConnectorStatus.DEGRADED))
-            down = await db.execute(select(func.count(Connector.id)).where(
-                Connector.project_id == p.id, Connector.status == ConnectorStatus.DOWN))
-            member_count = await db.execute(select(func.count(ProjectMember.id)).where(ProjectMember.project_id == p.id))
-            d = {**p.__dict__}
-            d.pop("_sa_instance_state", None)
-            d["connector_count"] = conn_count.scalar()
-            d["healthy_count"] = healthy.scalar()
-            d["degraded_count"] = degraded.scalar()
-            d["down_count"] = down.scalar()
-            d["member_count"] = member_count.scalar()
-            output.append(d)
+            output.append(await self._enrich_project(db, p))
         return output
 
     async def get_by_id(self, db: AsyncSession, project_id: str) -> Optional[Project]:
@@ -64,22 +86,7 @@ class ProjectService:
         project = await self.get_by_id(db, project_id)
         if not project:
             return None
-        conn_count = await db.execute(select(func.count(Connector.id)).where(Connector.project_id == project_id))
-        healthy = await db.execute(select(func.count(Connector.id)).where(
-            Connector.project_id == project_id, Connector.status == ConnectorStatus.HEALTHY))
-        degraded = await db.execute(select(func.count(Connector.id)).where(
-            Connector.project_id == project_id, Connector.status == ConnectorStatus.DEGRADED))
-        down = await db.execute(select(func.count(Connector.id)).where(
-            Connector.project_id == project_id, Connector.status == ConnectorStatus.DOWN))
-        member_count = await db.execute(select(func.count(ProjectMember.id)).where(ProjectMember.project_id == project_id))
-        d = {**project.__dict__}
-        d.pop("_sa_instance_state", None)
-        d["connector_count"] = conn_count.scalar()
-        d["healthy_count"] = healthy.scalar()
-        d["degraded_count"] = degraded.scalar()
-        d["down_count"] = down.scalar()
-        d["member_count"] = member_count.scalar()
-        return d
+        return await self._enrich_project(db, project)
 
     async def update(self, db: AsyncSession, project_id: str, data: ProjectUpdate) -> Optional[Project]:
         project = await self.get_by_id(db, project_id)
